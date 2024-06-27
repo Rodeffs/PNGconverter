@@ -24,8 +24,8 @@ int main(int argc, char *argv[]) {
 	
 	// If no parameters are given or switch --help is used
 
-	if (argc == 1 || parameterExists(argv, argv+argc, "--help")) {
-		cout << "Usage:\n\n-i [file] or --input-file [file]\tselect the input file to read from\n\n-o [file] or --output-file [file]\tselect the output file to write to\n\n-c or --convert\t\tconversion, assumed by default\n\n-d or --deconvert\t\tdeconversion\n\n-g or --grayscale\t\tif used for conversion, will make the PNG grayscale\n\n-p or --pixel-depth\t\tselects the pixel depth, available values: 8 and 16 bits for grayscale; 8, 24 and 48 bits otherwise.\n\t\t\tThe default is 8 bits\n\n-h or --help\t\tdisplay this help message\n\nNote that only the FIRST instances of -i and -o are read\n" << endl;
+	if (argc == 1 || parameterExists(argv, argv+argc, "--help") || parameterExists(argv, argv+argc, "-h")) {
+		cout << "Usage:\n\n-i [file] or --input-file [file]\tselect the input file to read from\n\n-o [file] or --output-file [file]\tselect the output file to write to\n\n-c or --convert\t\t\t\tconversion, assumed by default\n\n-d or --deconvert\t\t\tdeconversion\n\n-g or --grayscale\t\t\tif used for conversion, will make the PNG grayscale\n\n-p or --pixel-depth\t\t\tselects the pixel depth, available values: 8 and 16 bits for grayscale; 8, 24 and 48 bits otherwise, the default is 8 bits\n\n-h or --help\t\t\t\tdisplay this help message\n\nNote that only the FIRST instances of -i and -o are read\n" << endl;
 		return 0;
 	}
 	
