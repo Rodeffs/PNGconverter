@@ -41,3 +41,15 @@ void Converter::execute(Action action) { // I wrote execute so that I won't have
 	else if (action == Action::DECONVERT)
 		deconvert();
 }
+
+void Converter::deconvert() {
+
+	if (!pngUtilities::checkIfPng(&inputFile)) {
+		cout << "Error, the input file is not a PNG" << endl;
+		return;
+	}
+}
+
+void Converter::convert() {
+	return;
+}

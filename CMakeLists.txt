@@ -7,5 +7,5 @@ project(PNGconverter) # write the name of the project in the brackets
 
 set(CMAKE_CXX_STANDARD 17) # setting the standard of C++, should be 17 by default
 
-add_executable(PNGconverter inc/libraries.hpp inc/Converter.hpp src/Converter.cpp src/main.cpp) # all files used (including the project name) must be written in the brackets
+add_executable(PNGconverter inc/libraries.hpp inc/pngUtilities.hpp inc/Converter.hpp src/pngUtilities.cpp src/Converter.cpp src/main.cpp) # all files used (including the project name) must be written in the brackets
 

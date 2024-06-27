@@ -2,6 +2,8 @@
 
 #include "libraries.hpp"
 
+#include "pngUtilities.hpp"
+
 enum class Action {CONVERT, DECONVERT};
 
 class Converter {
