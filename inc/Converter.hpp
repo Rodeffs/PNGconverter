@@ -3,6 +3,7 @@
 #include "libraries.hpp"
 
 #include "pngUtils.hpp"
+#include <cstdint>
 
 class Converter {
 
@@ -10,6 +11,8 @@ private:
 	FILE* inputFile;
 
 	FILE* outputFile;
+
+	uintmax_t inputFileSize;
 
 	unsigned int depth;
 

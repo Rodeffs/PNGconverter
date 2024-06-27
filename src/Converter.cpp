@@ -1,5 +1,4 @@
 #include "../inc/Converter.hpp"
-#include <cstdio>
 
 Converter::Converter(char* inputFilePath, char* outputFilePath, unsigned int selectDepth, bool isGray) {
 
@@ -10,6 +9,15 @@ Converter::Converter(char* inputFilePath, char* outputFilePath, unsigned int sel
 	depth = selectDepth;
 
 	grayscale = isGray;
+	
+	try {
+		inputFileSize = fs::file_size(inputFilePath);  // since we need FileSize later
+	}
+	catch (const std::exception& e) {
+		cout << e.what() << endl;
+		return;
+	}
+
 }
 
 Converter::~Converter() {
@@ -110,8 +118,8 @@ void Converter::convert() {
 
 	if (!checkFiles() || !checkParameters())
 		return;
-
 	
+	auto resolution = ceil(sqrt( 8 * inputFileSize / depth));
 }
 
 /* The deconversion is the same, but in reverse:
