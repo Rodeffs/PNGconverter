@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
 	// If no parameters are given or switch --help is used
 
 	if (argc == 1 || parameterExists(argv, argv+argc, "--help") || parameterExists(argv, argv+argc, "-h")) {
-		cout << "Usage:\n\n-i [file] or --input-file [file]\tselect the input file to read from\n\n-o [file] or --output-file [file]\tselect the output file to write to\n\n-e or --encode\t\t\t\tencoding, assumed by default\n\n-d or --decode\t\t\t\tdecoding\n\n-g or --grayscale\t\t\tif used for encoding, will make the PNG black & white\n\n-h or --help\t\t\t\tdisplay this help message" << endl;
+		cout << "Usage:\n\n-i [file] or --input-file [file]\tselect the input file to read from\n\n-o [file] or --output-file [file]\tselect the output file to write to\n\n-e or --encode\t\t\t\tencoding, assumed by default\n\n-d or --decode\t\t\t\tdecoding\n\n-h or --help\t\t\t\tdisplay this help message" << endl;
 		return 0;
 	}
 	
@@ -72,12 +72,8 @@ int main(int argc, char *argv[]) {
 		}
 		converter.decode();
 	}
-	else {
-		if (parameterExists(argv, argv+argc, "-g") || parameterExists(argv, argv+argc, "--grayscale"))
-			converter.setGrayscale(true);
-		
+	else 
 		converter.encode();
-	}
 
 	return 0;
 }

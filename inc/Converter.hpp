@@ -26,12 +26,10 @@ private:
 
 	uintmax_t inputFileSize;
 
-	bool grayscale;
-
 	bool checkFiles();
 
 public:
-	Converter(char* inputFilePath, char* outputFilePath, bool isGray = false);
+	Converter(char* inputFilePath, char* outputFilePath);
 	
 	~Converter();
 
@@ -42,10 +40,6 @@ public:
 	FILE* getInputFile();
 
 	FILE* getOutputFile();
-
-	void setGrayscale(bool answer);
-
-	bool getGrayscale();
 
 	void encode();
 
