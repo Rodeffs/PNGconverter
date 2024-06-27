@@ -1,9 +1,12 @@
 #include "../inc/Converter.hpp"
 #include <string>
 #include <algorithm>
+#include <iostream>
 
 using std::find;
 using std::string;
+using std::cout;
+using std::endl;
 
 bool parameterExists(char** begin, char** end, const string& parameter) {  // checks that the input parameter exists
 

@@ -3,9 +3,11 @@
 #include "pngUtils.hpp"
 #include <exception>
 #include <cstdint>
+#include <cstdio>
 #include <cmath>
 #include <iostream>
 #include <filesystem>
+#include <png.h>  // the libpng library used to read/write PNGs
 
 using std::perror;
 using std::fopen;

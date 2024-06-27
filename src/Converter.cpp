@@ -1,4 +1,5 @@
 #include "../inc/Converter.hpp"
+#include <png.h>
 
 Converter::Converter(char* inputFilePath, char* outputFilePath, bool isGray) {
 
@@ -83,7 +84,6 @@ bool Converter::checkFiles() {
  * For this reason, if I were to choose 24 bit pixel depth (3 bytes), then if file size is not divisible by 3 I'd have to fill unused data with zeros.
  * It's not a problem for encoding, but it makes decoding ambiguous because I can't know for sure if those zeros were there originally or were added by the program.
  * Besides, who cares, 8-bit color is good enough, plus you can make it black & white.
- *
  */
 
 void Converter::encode() {
@@ -91,7 +91,15 @@ void Converter::encode() {
 	if (!checkFiles())
 		return;
 	
-	auto resolution = ceil(sqrt(inputFileSize));
+	unsigned int resolution = ceil(sqrt(inputFileSize));
+
+	// The fun begins now
+	
+	// A pointer to the resulting PNG
+
+	png_structp resultingPNG = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+
+	png_infop infoResultingPNG = png_create_info_struct(resultingPNG);
 }
 
 /* The decoding is the same, but in reverse:
