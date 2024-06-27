@@ -9,10 +9,12 @@ Converter::Converter(char* inputFilePath, char* outputFilePath) {
 }
 
 Converter::~Converter() {
-
-	fclose(inputFile);
-
-	fclose(outputFile);
+	
+	if (inputFile)
+		fclose(inputFile);
+	
+	if (outputFile)
+		fclose(outputFile);
 }
 
 bool Converter::checkFiles() {
@@ -44,10 +46,12 @@ void Converter::execute(Action action) { // I wrote execute so that I won't have
 
 void Converter::deconvert() {
 
-	if (!pngUtilities::checkIfPng(&inputFile)) {
+	if (!pngUtils::checkIfPng(inputFile)) {
 		cout << "Error, the input file is not a PNG" << endl;
 		return;
 	}
+
+	cout << "The input file is a PNG" << endl;
 }
 
 void Converter::convert() {
