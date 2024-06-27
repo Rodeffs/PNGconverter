@@ -1,6 +1,7 @@
 #pragma once
 
-#include "libraries.hpp"
+#include <cstdio>
+#include <png.h>  // the libpng library used to read/write PNGs
 
 namespace pngUtils {
 	

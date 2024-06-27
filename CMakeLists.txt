@@ -12,6 +12,6 @@ find_package(PNG REQUIRED)
 include_directories(${PNG_INCLUDE_DIR})
 
 
-add_executable(PNGconverter inc/libraries.hpp inc/pngUtils.hpp src/pngUtils.cpp inc/Converter.hpp src/Converter.cpp src/main.cpp) # all files used (including the project name) must be written in the brackets
+add_executable(PNGconverter inc/pngUtils.hpp src/pngUtils.cpp inc/Converter.hpp src/Converter.cpp src/main.cpp) # all files used (including the project name) must be written in the brackets
 
 target_link_libraries(PNGconverter ${PNG_LIBRARY})

@@ -1,8 +1,19 @@
 #pragma once
 
-#include "libraries.hpp"
-
 #include "pngUtils.hpp"
+#include <exception>
+#include <cstdint>
+#include <cmath>
+#include <iostream>
+#include <filesystem>
+
+using std::perror;
+using std::fopen;
+using std::fclose;
+using std::cout;
+using std::endl;
+using std::sqrt;
+using std::ceil;
 
 class Converter {
 

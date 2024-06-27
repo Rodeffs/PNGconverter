@@ -9,7 +9,7 @@ Converter::Converter(char* inputFilePath, char* outputFilePath, bool isGray) {
 	grayscale = isGray;
 	
 	try {
-		inputFileSize = fs::file_size(inputFilePath);  // since we need FileSize later
+		inputFileSize = std::filesystem::file_size(inputFilePath);  // since we need FileSize later
 	}
 	catch (const std::exception& e) {
 		cout << e.what() << endl;
