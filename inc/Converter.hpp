@@ -11,8 +11,16 @@ private:
 
 	FILE* outputFile;
 
+	unsigned int depth;
+
+	bool grayscale;
+
+	bool checkFiles();
+
+	bool checkParameters();
+
 public:
-	Converter(char* inputFilePath, char* outputFilePath);
+	Converter(char* inputFilePath, char* outputFilePath, unsigned int selectDepth = 8, bool isGray = false);
 	
 	~Converter();
 
@@ -24,7 +32,13 @@ public:
 
 	FILE* getOutputFile();
 
-	bool checkFiles();
+	void setPixelDepth(unsigned int newDepth);
+
+	void setGrayscale(bool answer);
+
+	unsigned int getPixelDepth();
+
+	bool getGrayscale();
 
 	void convert();
 
