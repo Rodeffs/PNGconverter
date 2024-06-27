@@ -1,25 +1,26 @@
 #pragma once
 
-#include <string>
-#include <fstream>
-#include <filesystem>
-#include <png.h>  // the libpng library used to read/write PNGs
-
-using std::string;
-using std::ifstream;
-using std::ofstream;
+#include "libraries.hpp"
 
 enum class Action {CONVERT, DECONVERT};
 
 class Converter {
 
 private:
-	ifstream* original;
+	FILE* inputFile;
+
+	FILE* outputFile;
+
+	void convert();
+
+	void deconvert();
 
 public:
-	Converter(ifstream& inputFile);
+	Converter(char* inputFilePath, char* outputFilePath);
+	
+	~Converter();
 
-	void convert(Action action, ofstream& outputFile);
+	bool checkFiles();
 
-
+	void execute(Action action);
 };

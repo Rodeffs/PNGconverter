@@ -1,20 +1,43 @@
 #include "../inc/Converter.hpp"
-#include <cstdio>
-#include <fstream>
-#include <iostream>
 
-Converter::Converter(ifstream& inputFile) {
-	original = &inputFile;
+Converter::Converter(char* inputFilePath, char* outputFilePath) {
+
+	inputFile = fopen(inputFilePath, "rb");
+
+	outputFile = fopen(outputFilePath, "wb");
 
 }
 
-void Converter::convert(Action action, ofstream& outputFile) {
-	string line;
+Converter::~Converter() {
 
-	while ((*original).good()) {
-		getline(*original, line);
-		std::cout << line << std::endl;
+	fclose(inputFile);
+
+	fclose(outputFile);
+}
+
+bool Converter::checkFiles() {
+
+	if (!inputFile) {
+		perror("Error, unable to open input file");
+		return false;
 	}
 
-	outputFile << "testing";
+	if (!outputFile) {
+		perror("Error, unable to open output file");
+		return false;
+	}
+
+	return true;
+}
+
+void Converter::execute(Action action) { // I wrote execute so that I won't have to checkFiles() twice for conversion/deconversion
+	
+	if (!checkFiles())
+		return;
+
+	if (action == Action::CONVERT)
+		convert();
+
+	else if (action == Action::DECONVERT)
+		deconvert();
 }
