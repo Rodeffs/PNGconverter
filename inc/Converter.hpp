@@ -26,6 +26,8 @@ private:
 
 	uintmax_t inputFileSize;
 
+	unsigned char* readOriginal();  // to read the original file byte by byte and store it on heap
+
 	bool checkFiles();
 
 public:
