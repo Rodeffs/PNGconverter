@@ -3,7 +3,6 @@
 #include "libraries.hpp"
 
 #include "pngUtils.hpp"
-#include <cstdint>
 
 class Converter {
 
@@ -14,16 +13,12 @@ private:
 
 	uintmax_t inputFileSize;
 
-	unsigned int depth;
-
 	bool grayscale;
 
 	bool checkFiles();
 
-	bool checkParameters();
-
 public:
-	Converter(char* inputFilePath, char* outputFilePath, unsigned int selectDepth = 8, bool isGray = false);
+	Converter(char* inputFilePath, char* outputFilePath, bool isGray = false);
 	
 	~Converter();
 
@@ -35,16 +30,11 @@ public:
 
 	FILE* getOutputFile();
 
-	void setPixelDepth(unsigned int newDepth);
-
 	void setGrayscale(bool answer);
-
-	unsigned int getPixelDepth();
 
 	bool getGrayscale();
 
-	void convert();
+	void encode();
 
-	void deconvert();
-
+	void decode();
 };

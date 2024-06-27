@@ -5,4 +5,5 @@
 namespace pngUtils {
 	
 	int checkIfPng(FILE* openedFile); // works with already opened files
+	
 }
