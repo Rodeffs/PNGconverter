@@ -4,8 +4,6 @@
 
 #include "pngUtils.hpp"
 
-enum class Action {CONVERT, DECONVERT};
-
 class Converter {
 
 private:
@@ -13,16 +11,23 @@ private:
 
 	FILE* outputFile;
 
-	void convert();
-
-	void deconvert();
-
 public:
 	Converter(char* inputFilePath, char* outputFilePath);
 	
 	~Converter();
 
+	void setInputFile(char* newInputFilePath);
+
+	void setOutputFile(char* newOutputFilePath);
+
+	FILE* getInputFile();
+
+	FILE* getOutputFile();
+
 	bool checkFiles();
 
-	void execute(Action action);
+	void convert();
+
+	void deconvert();
+
 };

@@ -1,4 +1,5 @@
 #include "../inc/Converter.hpp"
+#include <cstdio>
 
 Converter::Converter(char* inputFilePath, char* outputFilePath) {
 
@@ -17,6 +18,30 @@ Converter::~Converter() {
 		fclose(outputFile);
 }
 
+void Converter::setInputFile(char* newInputFilePath) {
+
+	if (inputFile)
+		fclose(inputFile);
+
+	inputFile = fopen(newInputFilePath, "rb");
+}
+
+void Converter::setOutputFile(char* newOutputFilePath) {
+
+	if (outputFile)
+		fclose(outputFile);
+
+	outputFile = fopen(newOutputFilePath, "wb");
+}
+
+FILE* Converter::getInputFile() {
+	return inputFile;
+}
+
+FILE* Converter::getOutputFile() {
+	return outputFile;
+}
+
 bool Converter::checkFiles() {
 
 	if (!inputFile) {
@@ -32,19 +57,10 @@ bool Converter::checkFiles() {
 	return true;
 }
 
-void Converter::execute(Action action) { // I wrote execute so that I won't have to checkFiles() twice for conversion/deconversion
-	
+void Converter::deconvert() {
+
 	if (!checkFiles())
 		return;
-
-	if (action == Action::CONVERT)
-		convert();
-
-	else if (action == Action::DECONVERT)
-		deconvert();
-}
-
-void Converter::deconvert() {
 
 	if (!pngUtils::checkIfPng(inputFile)) {
 		cout << "Error, the input file is not a PNG" << endl;
@@ -55,5 +71,7 @@ void Converter::deconvert() {
 }
 
 void Converter::convert() {
-	return;
+
+	if (!checkFiles())
+		return;
 }

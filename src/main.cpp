@@ -46,25 +46,21 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 
-	// Checking whether to convert or to deconvert the input file, conversion is the default
+	// Now pass the filenames to Converter
 
-	Action action;
+	Converter converter(inputFilePath, outputFilePath);
+
+	// Checking whether to convert or to deconvert the input file, conversion is the default
 
 	if (parameterExists(argv, argv+argc, "-d")) {
 		if (parameterExists(argv, argv+argc, "-c")) {
 			cout << "Error, conflicting switches. Use either -c or -d" << endl;
 			return 0;
 		}
-		action = Action::DECONVERT;
+		converter.deconvert();
 	}
 	else
-		action = Action::CONVERT;
-
-	// Now pass all the parameters to the class and begin conversion
-	
-	Converter converter(inputFilePath, outputFilePath);
-
-	converter.execute(action);
+		converter.convert();
 
 	return 0;
 }
