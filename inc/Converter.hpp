@@ -7,7 +7,6 @@
 #include <cmath>
 #include <iostream>
 #include <filesystem>
-#include <png.h>  // the libpng library used to read/write PNGs
 
 using std::perror;
 using std::fopen;
@@ -26,13 +25,24 @@ private:
 
 	uintmax_t inputFileSize;
 
-	unsigned char* readBytes(int extraBytes);  // to read the original file byte by byte and store it on heap
+	unsigned char* readBytes(int extraBytes);  // reads the original file byte by byte and adds extra info needed for decoding
 
+	void calculateInputFileSize();
 
 public:
 	Converter(char* inFilePath, char* outFilePath);
 	
 	~Converter() = default;
+
+	void setInputFilePath(char* newInputFilePath);
+
+	void setOutputFilePath(char* newOutputFilePath);
+
+	char* getInputFilePath();
+
+	char* getOutputFilePath();
+
+	uintmax_t getInputFileSize();
 
 	void encode();
 

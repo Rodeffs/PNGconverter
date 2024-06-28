@@ -1,6 +1,4 @@
 #include "../inc/pngUtils.hpp"
-#include <cstring>
-#include <png.h>
 
 ImagePNG::ImagePNG(char* filePath, const char* mode) {
 
@@ -104,3 +102,7 @@ void ImagePNG::write(unsigned char* data) {
 
 }
 
+unsigned char* ImagePNG::read() {
+
+	return nullptr;
+}

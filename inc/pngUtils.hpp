@@ -4,7 +4,7 @@
 #include <iostream>
 #include <cstdio>
 #include <cstring>
-#include <png.h>  // the libpng library used to read/write PNGs
+#include <png.h>  // the C libpng library used to read/write PNGs
 
 using std::cout;
 using std::endl;
@@ -40,8 +40,8 @@ public:
 
 	void create(uintmax_t width, uintmax_t height);
 
-	void write(unsigned char* data);
+	void write(unsigned char* data); // writes pixel data to PNG
 
-	void read();
+	unsigned char* read(); // reads pixel data fron PNG, ignoring transparent pixels
 };	
 	
