@@ -1,15 +1,10 @@
 #include "../inc/Converter.hpp"
-#include <cstdint>
-#include <cstdio>
-#include <exception>
-#include <png.h>
-#include <pngconf.h>
 
-Converter::Converter(char* inputFilePath, char* outputFilePath) {
+Converter::Converter(char* inFilePath, char* outFilePath) {
 
-	inputFile = fopen(inputFilePath, "rb");
+	inputFilePath = inFilePath;
 
-	outputFile = fopen(outputFilePath, "wb");
+	outFilePath = outFilePath;
 
 	try {
 		inputFileSize = std::filesystem::file_size(inputFilePath);  // since we need FileSize later
@@ -20,71 +15,38 @@ Converter::Converter(char* inputFilePath, char* outputFilePath) {
 	}
 }
 
-Converter::~Converter() {
-	
-	if (inputFile)
-		fclose(inputFile);
-	
-	if (outputFile)
-		fclose(outputFile);
-}
+unsigned char* Converter::readBytes(int extraBytes) {
 
-void Converter::setInputFile(char* newInputFilePath) {
-
-	if (inputFile)
-		fclose(inputFile);
-
-	inputFile = fopen(newInputFilePath, "rb");
-}
-
-void Converter::setOutputFile(char* newOutputFilePath) {
-
-	if (outputFile)
-		fclose(outputFile);
-
-	outputFile = fopen(newOutputFilePath, "wb");
-}
-
-FILE* Converter::getInputFile() {
-	return inputFile;
-}
-
-FILE* Converter::getOutputFile() {
-	return outputFile;
-}
-
-bool Converter::checkFiles() {
+	FILE* inputFile = fopen(inputFilePath, "rb");
 
 	if (!inputFile) {
 		perror("Error, unable to open input file");
-		return false;
+		return nullptr;
 	}
 
-	if (!outputFile) {
-		perror("Error, unable to open output file");
-		return false;
-	}
+	unsigned char* data = new unsigned char[3 + inputFileSize];
 
-	return true;
-}
+	// The very first pixel values as discussed below
 
-unsigned char* Converter::readOriginal() {
+	data[0] = 0;
 
-	unsigned char* buffer = new unsigned char[inputFileSize];
+	data[1] = (extraBytes == 2) ? 255 : 0;
+
+	data[2] = (extraBytes != 0) ? 255 : 0;
 	
 	try {
 		for (uintmax_t i = 0; i < inputFileSize; i++)
-			buffer[i] = std::fgetc(inputFile); 
+			data[i+3] = std::fgetc(inputFile); 
 	}
 	catch (const std::exception& e) {
 		cout << e.what() << endl;
-		delete[] buffer;
+		delete[] data;
 		return nullptr;
 	}
 
 	fclose(inputFile);
 
-	return buffer;
+	return data;
 } 
 
 /* So the way I plan to convert the file to PNG is this:
@@ -103,50 +65,15 @@ unsigned char* Converter::readOriginal() {
 
 void Converter::encode() {
 
-	if (!checkFiles())
-		return;
+	uintmax_t resolution = ceil(sqrt(1 + inputFileSize / 3));
 	
-	unsigned int resolution = ceil(sqrt(inputFileSize));
-	
-	// Original file buffer
+	ImagePNG outputPNG(outputFilePath, "wb");
 
-	auto buffer = readOriginal();
+	outputPNG.create(resolution, resolution);
 
-	// The fun begins now
-	
-	// A pointer to the resulting PNG
+	int extraBytes = (3 - inputFileSize % 3) % 3;
 
-	png_structp resultingPNG = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-	
-	// This is the struct that hold pixel data
-
-	png_infop infoCurrentPNG = png_create_info_struct(resultingPNG);
-
-	// Error handling
-	
-	if (setjmp(png_jmpbuf(resultingPNG))) {
-		png_destroy_write_struct(&resultingPNG, &infoCurrentPNG);
-		cout << "Error when modifying PNG to write" << endl;
-		return;
-	}
-
-	// This is the output code
-
-	png_init_io(resultingPNG, outputFile);
-
-	// This is all the information about the PNG, its resolution (which we calculated earlier), bit depth, color type, interlace, compression type and filter type
-	
-	png_set_IHDR(resultingPNG, infoCurrentPNG, resolution, resolution, 8, PNG_COLOR_TYPE_RGB_ALPHA, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-	
-	// Write to image row by row
-
-	for (unsigned int y = 0; y < resolution; y++) {
-		auto row = new png_bytep[3 * resolution * sizeof(png_byte)];
-
-		for (unsigned int x = 0; x < resolution; x++) {
-
-		}
-	}
+	outputPNG.write(readBytes(extraBytes));
 }
 
 /* The decoding is the same, but in reverse:
@@ -161,14 +88,6 @@ void Converter::encode() {
  */
 
 void Converter::decode() {
-
-	if (!checkFiles())
-		return;
-
-	if (!pngUtils::checkIfPng(inputFile)) {
-		cout << "Error, the input file is not a PNG" << endl;
-		return;
-	}
 
 }
 

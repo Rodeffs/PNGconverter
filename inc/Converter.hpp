@@ -20,28 +20,19 @@ using std::ceil;
 class Converter {
 
 private:
-	FILE* inputFile;
+	char* inputFilePath;
 
-	FILE* outputFile;
+	char* outputFilePath;
 
 	uintmax_t inputFileSize;
 
-	unsigned char* readOriginal();  // to read the original file byte by byte and store it on heap
+	unsigned char* readBytes(int extraBytes);  // to read the original file byte by byte and store it on heap
 
-	bool checkFiles();
 
 public:
-	Converter(char* inputFilePath, char* outputFilePath);
+	Converter(char* inFilePath, char* outFilePath);
 	
-	~Converter();
-
-	void setInputFile(char* newInputFilePath);
-
-	void setOutputFile(char* newOutputFilePath);
-
-	FILE* getInputFile();
-
-	FILE* getOutputFile();
+	~Converter() = default;
 
 	void encode();
 
