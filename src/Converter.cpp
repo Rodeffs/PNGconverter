@@ -1,7 +1,7 @@
 #include "../inc/Converter.hpp"
 #include "../inc/pngUtils.hpp"
+#include <cstdint>
 #include <filesystem>
-#include <exception>
 #include <cmath>
 #include <iostream>
 
@@ -10,9 +10,7 @@ using std::fclose;
 using std::cout;
 using std::endl;
 using std::sqrt;
-using std::ceil;
 using std::floor;
-using std::exception;
 using std::perror;
 using std::fgetc;
 using std::fputc;
@@ -74,27 +72,22 @@ unsigned char* Converter::readBytes(FILE* inputFile, uintmax_t inputFileSize, ui
 
 	auto extraValues = intToBytes(extraBytes);
 
-	for (int i = 0; i < 8; i++)
-		data[i+1] = extraValues[i];
+	uintmax_t i = 1;
+
+	for (i; i < 9; i++)
+		data[i] = extraValues[i-1];
 
 	delete[] extraValues;
 	
 	// Converting the initial data into byte data
-
-	try {
-		for (uintmax_t i = 0; i < inputFileSize; i++)
-			data[i+9] = fgetc(inputFile); 
-	}
-	catch (const exception& e) {
-		cout << e.what() << endl;
-		delete[] data;
-		return nullptr;
-	}
 	
+	for (i; i < inputFileSize + 9; i++)
+		data[i] = fgetc(inputFile); 
+
 	// Adding extra bytes if there are any
 
-	for (int i = 0; i < extraBytes; i++) 
-		data[9 + inputFileSize + i] = 0;
+	for (uintmax_t j = 0; j < extraBytes; j++) 
+		data[i + j] = 0;
 	
 	return data;
 } 
@@ -111,7 +104,11 @@ Resolution* Converter::bestResolution(uintmax_t fileSize) {
  * If the resulting number is positive, it means there are still some leftover pixels left, which we can include by
  * increasing the height as well
  */
-	uintmax_t totalPixels = 3 + ceil(fileSize / 3);
+	// In case the initial file size is not divisible by 3, add this amount of extra bytes
+
+	int toBeDivisibleBy3 = (3 - fileSize % 3) % 3;
+
+	uintmax_t totalPixels = 3 + (fileSize + toBeDivisibleBy3) / 3;
 
 	Resolution* resolution = new Resolution;
 
@@ -174,7 +171,7 @@ void Converter::encode(char* inputFilePath, char* outputFilePath) {
 		return;
 	}
 	
-	uintmax_t extraBytes = resolution->height * resolution->width * 3 - inputFileSize;
+	uintmax_t extraBytes = resolution->height * resolution->width * 3 - inputFileSize - 9;
 
 	cout << "Reading bytes from the input file" << endl;
 
@@ -186,7 +183,7 @@ void Converter::encode(char* inputFilePath, char* outputFilePath) {
 
 	ImagePNG outputPNG;
 
-	outputPNG.write(byteData, outputFile, resolution->width, resolution->height);
+	outputPNG.write(byteData, outputFile, resolution->width, resolution->height, (inputFileSize + 9 + extraBytes));
 
 	delete resolution;
 
@@ -233,13 +230,8 @@ void Converter::decode(char* inputFilePath, char* outputFilePath) {
 
 	cout << "Writing byte data to file" << endl;
 
-	try {
-		for (uintmax_t i = 9; i < byteDataSize - extraBytes + 9; i++)
-			fputc(byteData[i], outputFile);
-	}
-	catch (const exception& e) {
-		cout << e.what() << endl;
-	}
+	for (uintmax_t i = 9; i < (byteDataSize - extraBytes); i++)
+		fputc(byteData[i], outputFile);
 
 	fclose(outputFile);
 

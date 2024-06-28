@@ -1,6 +1,8 @@
 #include "../inc/pngUtils.hpp"
+#include <cstdint>
 #include <iostream>
 #include <png.h>
+#include <pngconf.h>
 
 using std::cout;
 using std::endl;
@@ -22,7 +24,7 @@ int ImagePNG::checkIfPNG(FILE *file) {
 }
 
 
-void ImagePNG::write(unsigned char* data, FILE* outputFile, uintmax_t width, uintmax_t height) {
+void ImagePNG::write(unsigned char* data, FILE* outputFile, uintmax_t width, uintmax_t height, uintmax_t dataSize) {
 
 	if (!outputFile) {
 		perror("Error in pngUtils, unable to open output file");
@@ -62,7 +64,7 @@ void ImagePNG::write(unsigned char* data, FILE* outputFile, uintmax_t width, uin
 	// plaintext with a couple of examples that don't really explain much
 
 	png_bytep row = new png_byte[3 * width * sizeof(png_byte)];
-
+	
 	for (uintmax_t y = 0; y < height; y++) {
 		for (uintmax_t x = 0; x < width*3; x++)
 			row[x] = data[y*height*3 + x];
@@ -133,10 +135,10 @@ unsigned char* ImagePNG::read(FILE* inputFile) {
 	
 	readDataSize = height * width * 3;	
 
-	png_bytepp row_pointers = (png_bytepp)png_malloc(png_ptr, sizeof(png_bytepp) * height);
+	png_bytepp row_pointers = new png_bytep[height * sizeof(png_bytep)];
 
 	for (int i = 0; i < height; i++)
-		row_pointers[i] = (png_bytep)png_malloc(png_ptr, width * 3);
+		row_pointers[i] = new png_byte[width * 3 * sizeof(png_byte)];
 
 	png_set_rows(png_ptr, info_ptr, row_pointers);
 
@@ -152,6 +154,11 @@ unsigned char* ImagePNG::read(FILE* inputFile) {
 	}
 
 	// Getting rid of the data
+	
+	for (int i = 0; i < height; i++)
+		delete[] row_pointers[i];
+
+	delete[] row_pointers;
 
 	png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
 
