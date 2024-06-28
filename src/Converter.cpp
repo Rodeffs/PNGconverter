@@ -42,7 +42,7 @@ uintmax_t Converter::bytesToInt(unsigned char* byteData) {
 
 	uintmax_t decoded = 0;
 
-	for (int i = 0; i < 8; i++) {
+	for (int i = 1; i < 9; i++) {
 		decoded <<= 8;
 		decoded += byteData[i];
 	}
@@ -212,7 +212,7 @@ void Converter::decode(char* inputFilePath, char* outputFilePath) {
 	auto byteDataSize = inputPNG.getReadDataSize();
 	
 	try {
-		for (uintmax_t i = 8; i < byteDataSize - extraBytes; i++)
+		for (uintmax_t i = 9; i < byteDataSize - extraBytes; i++)
 			fputc(byteData[i], outputFile);
 	}
 	catch (const exception& e) {
