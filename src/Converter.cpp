@@ -1,5 +1,6 @@
 #include "../inc/Converter.hpp"
 #include "../inc/pngUtils.hpp"
+#include <cstdio>
 #include <filesystem>
 #include <exception>
 #include <cmath>
@@ -14,6 +15,8 @@ using std::ceil;
 using std::floor;
 using std::exception;
 using std::perror;
+using std::fgetc;
+using std::fputc;
 
 namespace fs = std::filesystem;
 
@@ -81,7 +84,7 @@ unsigned char* Converter::readBytes(FILE* inputFile, uintmax_t inputFileSize, ui
 
 	try {
 		for (uintmax_t i = 0; i < inputFileSize; i++)
-			data[i+9] = std::fgetc(inputFile); 
+			data[i+9] = fgetc(inputFile); 
 	}
 	catch (const exception& e) {
 		cout << e.what() << endl;
@@ -186,7 +189,7 @@ void Converter::encode(char* inputFilePath, char* outputFilePath) {
  * 1. Continue reading the PNG pixel by pixel, row by row
  * 2. Every pixel color value is split into three bytes corresponding to the color
  * 3. Each byte is appended to output file
- * 4. The last X bytes are ignored and not added.
+ * 4. The last X bytes are ignored.
  */
 
 void Converter::decode(char* inputFilePath, char* outputFilePath) {
@@ -197,6 +200,27 @@ void Converter::decode(char* inputFilePath, char* outputFilePath) {
 	
 	if (!checkFiles(inputFile, outputFile))
 		return;
+
+	ImagePNG inputPNG;
+
+	auto byteData = inputPNG.read(inputFile);
+
+	fclose(inputFile);
+
+	auto extraBytes = bytesToInt(byteData);
+
+	auto byteDataSize = inputPNG.getReadDataSize();
 	
+	try {
+		for (uintmax_t i = 8; i < byteDataSize - extraBytes; i++)
+			fputc(byteData[i], outputFile);
+	}
+	catch (const exception& e) {
+		cout << e.what() << endl;
+	}
+
+	delete[] byteData;
+
+	fclose(outputFile);
 }
 

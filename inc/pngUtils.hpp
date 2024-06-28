@@ -11,6 +11,8 @@ private:
 
 	png_infop info_ptr;
 
+	uintmax_t readDataSize = 0; // a bit crappy way to get information about pixel data size
+
 public:
 	ImagePNG();
 	
@@ -20,6 +22,8 @@ public:
 
 	void write(unsigned char* data, FILE* outputFile, uintmax_t width, uintmax_t height); // writes pixel data to PNG
 
-	unsigned char* read(FILE* inputFile); // reads pixel data fron PNG, ignoring transparent pixels
-};	
+	unsigned char* read(FILE* inputFile); // reads pixel data fron PNG
 	
+	uintmax_t getReadDataSize();
+};	
+

@@ -1,4 +1,5 @@
 #include "../inc/pngUtils.hpp"
+#include <cstdint>
 #include <cstdio>
 #include <iostream>
 
@@ -34,6 +35,10 @@ ImagePNG::~ImagePNG() {
 		png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
 }
 
+uintmax_t ImagePNG::getReadDataSize() {
+
+	return readDataSize;
+}
 
 int ImagePNG::checkIfPng(FILE *file) {
 
