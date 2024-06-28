@@ -75,7 +75,6 @@ int main(int argc, char *argv[]) {
 	else 
 		converter.encode(inputFilePath, outputFilePath);
 	
-	cout << "Done!" << endl;
 
 	return 0;
 }

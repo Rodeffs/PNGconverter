@@ -194,6 +194,8 @@ void Converter::encode(char* inputFilePath, char* outputFilePath) {
 	delete[] byteData;
 
 	fclose(outputFile);
+
+	cout << "Done!" << endl;
 }
 
 /* The decoding is the same, but in reverse:
@@ -243,5 +245,7 @@ void Converter::decode(char* inputFilePath, char* outputFilePath) {
 	delete[] byteData;
 
 	fclose(outputFile);
+
+	cout << "Done!" << endl;
 }
 

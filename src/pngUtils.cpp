@@ -44,7 +44,7 @@ void ImagePNG::write(unsigned char* data, FILE* outputFile, uintmax_t width, uin
 	
 	if (setjmp(png_jmpbuf(png_ptr))) {
 		png_destroy_write_struct(&png_ptr, &info_ptr);
-		cout << "Error when modifying PNG" << endl;
+		cout << "Error while writing to PNG" << endl;
 		return;
 	}
 
@@ -52,9 +52,9 @@ void ImagePNG::write(unsigned char* data, FILE* outputFile, uintmax_t width, uin
 
 	png_init_io(png_ptr, outputFile);
 	
-	// IHDR chunk store all the necessary info about the PNG
+	// IHDR chunk stores all the necessary info about the PNG
 
-	png_set_IHDR(png_ptr, info_ptr, width, height, 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+	png_set_IHDR(png_ptr, info_ptr, width, height, 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 	
 	// Don't forget to write all chunks before writing pixel data!
 
@@ -105,7 +105,7 @@ unsigned char* ImagePNG::read(FILE* inputFile) {
 	
 	if (setjmp(png_jmpbuf(png_ptr))) {
 		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-		cout << "Error when reading PNG" << endl;
+		cout << "Error while reading PNG" << endl;
 		return nullptr;
 	}
 
@@ -121,9 +121,9 @@ unsigned char* ImagePNG::read(FILE* inputFile) {
 
 	png_uint_32 width, height;
 
-	int bit_depth, color_type, interlace_method, compression_method, filter_method;
+	int bit_depth, color_type, interlace_method;
 
-	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_method, &compression_method, &filter_method);
+	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_method, NULL, NULL);
 	
 	// Checking if it was encoded with the needed parameters
 
@@ -142,6 +142,8 @@ unsigned char* ImagePNG::read(FILE* inputFile) {
 		row_pointers[i] = (png_bytep)png_malloc(png_ptr, width * 3);
 
 	png_set_rows(png_ptr, info_ptr, row_pointers);
+
+	png_read_image(png_ptr, row_pointers);
 	
 	// Converting the pixel data to byte data
 	
@@ -153,8 +155,6 @@ unsigned char* ImagePNG::read(FILE* inputFile) {
 	}
 
 	// Getting rid of the data
-
-	png_read_end(png_ptr, NULL);
 
 	png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
 
