@@ -1,9 +1,6 @@
 #include "../inc/pngUtils.hpp"
-#include <cstdint>
-#include <cstdio>
 #include <iostream>
 #include <png.h>
-#include <pngconf.h>
 
 using std::cout;
 using std::endl;
@@ -159,8 +156,6 @@ unsigned char* ImagePNG::read(FILE* inputFile) {
 	png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
 
 	png_destroy_read_struct(&png_ptr, (png_infopp)NULL, (png_infopp)NULL);
-
-//	free(row_pointers);
 
 	return byteData;
 }

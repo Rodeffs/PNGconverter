@@ -1,6 +1,5 @@
 #include "../inc/Converter.hpp"
 #include "../inc/pngUtils.hpp"
-#include <cstdio>
 #include <filesystem>
 #include <exception>
 #include <cmath>
@@ -174,7 +173,7 @@ void Converter::encode(char* inputFilePath, char* outputFilePath) {
 		fclose(outputFile);
 		return;
 	}
-
+	
 	uintmax_t extraBytes = resolution->height * resolution->width * 3 - inputFileSize;
 
 	cout << "Reading bytes from the input file" << endl;
@@ -233,18 +232,18 @@ void Converter::decode(char* inputFilePath, char* outputFilePath) {
 	auto byteDataSize = inputPNG.getReadDataSize();
 
 	cout << "Writing byte data to file" << endl;
-	
+
 	try {
-		for (uintmax_t i = 9; i < byteDataSize - extraBytes; i++)
+		for (uintmax_t i = 9; i < byteDataSize - extraBytes + 9; i++)
 			fputc(byteData[i], outputFile);
 	}
 	catch (const exception& e) {
 		cout << e.what() << endl;
 	}
 
-	delete[] byteData;
-
 	fclose(outputFile);
+
+	delete[] byteData;
 
 	cout << "Done!" << endl;
 }
