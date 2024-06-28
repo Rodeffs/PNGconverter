@@ -1,4 +1,5 @@
 #include "../inc/pngUtils.hpp"
+#include <png.h>
 
 ImagePNG::ImagePNG(char* filePath, const char* mode) {
 
@@ -20,7 +21,7 @@ ImagePNG::ImagePNG(char* filePath, const char* mode) {
 
 	info_ptr = png_create_info_struct(png_ptr);
 
-	// Error handling
+	// Error handling idk if incorrect
 	
 	if (setjmp(png_jmpbuf(png_ptr))) {
 		png_destroy_write_struct(&png_ptr, &info_ptr);
@@ -90,16 +91,26 @@ void ImagePNG::create(uintmax_t width, uintmax_t height) {
 void ImagePNG::write(unsigned char* data) {
 
 	// Write to image row by row
+	// Y'know, everything would be much easier if there was actual documentation for that, not just
+	// plaintext with a couple of examples that don't really explain much
 
+	png_bytep row = new png_byte[3 * width * sizeof(png_byte)];
+	
+	int i = 0;
 	for (unsigned int y = 0; y < height; y++) {
-		auto row = new png_bytep[3 * width * sizeof(png_byte)];
-
 		for (unsigned int x = 0; x < width; x++) {
-
+			for (int byte = 0; byte < 3; byte++)
+				row[x+byte] = data[i];
+			i++;
 		}
+		png_write_row(png_ptr, row);
 	}
 
+	png_write_end(png_ptr, NULL);
 
+	delete[] data;
+
+	delete[] row;
 }
 
 unsigned char* ImagePNG::read() {

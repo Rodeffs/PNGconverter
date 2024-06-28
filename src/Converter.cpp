@@ -1,5 +1,10 @@
 #include "../inc/Converter.hpp"
-#include <cstdint>
+#include "../inc/pngUtils.hpp"
+#include <filesystem>
+#include <exception>
+
+using std::exception;
+namespace fs = std::filesystem;
 
 Converter::Converter(char* inFilePath, char* outFilePath) {
 
@@ -13,9 +18,9 @@ Converter::Converter(char* inFilePath, char* outFilePath) {
 void Converter::calculateInputFileSize() {
 
 	try {
-		inputFileSize = std::filesystem::file_size(inputFilePath);
+		inputFileSize = fs::file_size(inputFilePath);
 	}
-	catch (const std::exception& e) {
+	catch (const exception& e) {
 		cout << e.what() << endl;
 		return;
 	}
@@ -101,7 +106,7 @@ unsigned char* Converter::readBytes(uintmax_t extraBytes) {
 		for (uintmax_t i = 0; i < inputFileSize; i++)
 			data[i+9] = std::fgetc(inputFile); 
 	}
-	catch (const std::exception& e) {
+	catch (const exception& e) {
 		cout << e.what() << endl;
 		delete[] data;
 		return nullptr;
@@ -125,9 +130,9 @@ Resolution* Converter::bestResolution() {
  * Next, we calculate the square root of the result, round it down and use the number as the current resolution.
  * Then we find the amount of leftover pixels if we were to use this resolution.
  * If there are none, then we keep it
- * If there is some, then we increase the height by 1 and substract this value from left over pixels
+ * If there is some, then we increase the width by 1 and substract this value from the leftover pixels
  * If the resulting number is positive, it means there are still some leftover pixels left, which we can include by
- * increasing the width as well
+ * increasing the height as well
  */
 	uintmax_t totalPixels = 3 + ceil(inputFileSize / 3);
 
@@ -140,12 +145,12 @@ Resolution* Converter::bestResolution() {
 	int leftoverPixels = totalPixels - resolution->height * resolution->width;
 
 	if (leftoverPixels > 0) {
-		resolution->height += 1;
-		leftoverPixels -= resolution->height;
+		resolution->width += 1;
+		leftoverPixels -= resolution->width;
 	}
 
 	if (leftoverPixels > 0)
-		resolution->width += 1;
+		resolution->height += 1;
 
 	return resolution;
 }

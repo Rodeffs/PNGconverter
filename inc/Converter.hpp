@@ -1,12 +1,9 @@
 #pragma once
 
-#include "pngUtils.hpp"
-#include <exception>
 #include <cstdint>
 #include <cstdio>
 #include <cmath>
 #include <iostream>
-#include <filesystem>
 
 using std::perror;
 using std::fopen;
@@ -55,8 +52,6 @@ public:
 	char* getInputFilePath();
 
 	char* getOutputFilePath();
-
-	uintmax_t getInputFileSize();
 
 	void encode();
 
