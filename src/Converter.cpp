@@ -2,51 +2,20 @@
 #include "../inc/pngUtils.hpp"
 #include <filesystem>
 #include <exception>
+#include <cmath>
+#include <iostream>
 
+using std::fopen;
+using std::fclose;
+using std::cout;
+using std::endl;
+using std::sqrt;
+using std::ceil;
+using std::floor;
 using std::exception;
+using std::perror;
+
 namespace fs = std::filesystem;
-
-Converter::Converter(char* inFilePath, char* outFilePath) {
-
-	inputFilePath = inFilePath;
-
-	outFilePath = outFilePath;
-
-	calculateInputFileSize();
-}
-
-void Converter::calculateInputFileSize() {
-
-	try {
-		inputFileSize = fs::file_size(inputFilePath);
-	}
-	catch (const exception& e) {
-		cout << e.what() << endl;
-		return;
-	}
-}
-
-void Converter::setInputFilePath(char* newInputFilePath) {
-
-	inputFilePath = newInputFilePath;
-
-	calculateInputFileSize();
-}
-
-void Converter::setOutputFilePath(char* newOutputFilePath) {
-
-	outputFilePath = newOutputFilePath;
-}
-
-char* Converter::getInputFilePath() {
-
-	return inputFilePath;
-}
-
-char* Converter::getOutputFilePath() {
-
-	return outputFilePath;
-}
 
 unsigned char* Converter::intToBytes(uintmax_t value) {
 	
@@ -78,14 +47,22 @@ uintmax_t Converter::bytesToInt(unsigned char* byteData) {
 	return decoded;
 }
 
-unsigned char* Converter::readBytes(uintmax_t extraBytes) {
-
-	FILE* inputFile = fopen(inputFilePath, "rb");
+bool Converter::checkFiles(FILE* inputFile, FILE* outputFile) {
 
 	if (!inputFile) {
-		perror("Error, unable to open input file");
-		return nullptr;
+		perror("Error in converter, unable to open input file");
+		return false;
 	}
+
+	if (!outputFile) {
+		perror("Error in converter, unable to open output file");
+		return false;
+	}
+
+	return true;
+}
+
+unsigned char* Converter::readBytes(FILE* inputFile, uintmax_t inputFileSize, uintmax_t extraBytes) {
 
 	unsigned char* data = new unsigned char[9 + inputFileSize + extraBytes];
 
@@ -117,12 +94,10 @@ unsigned char* Converter::readBytes(uintmax_t extraBytes) {
 	for (int i = 0; i < extraBytes; i++) 
 		data[9 + inputFileSize + i] = 0;
 	
-	fclose(inputFile);
-
 	return data;
 } 
 
-Resolution* Converter::bestResolution() {
+Resolution* Converter::bestResolution(uintmax_t fileSize) {
 
 /* The idea is to store image using as less pixels as possible, while also making it resemble a square as much as possible.
  * To do that first we need to know how many pixels the original file takes, which we can calculate by dividing the original
@@ -134,7 +109,7 @@ Resolution* Converter::bestResolution() {
  * If the resulting number is positive, it means there are still some leftover pixels left, which we can include by
  * increasing the height as well
  */
-	uintmax_t totalPixels = 3 + ceil(inputFileSize / 3);
+	uintmax_t totalPixels = 3 + ceil(fileSize / 3);
 
 	Resolution* resolution = new Resolution;
 
@@ -172,31 +147,38 @@ Resolution* Converter::bestResolution() {
  * at least 2^128 - 2^64 bytes, roughly 2^68 EiB of data, waaaayyy more than any file system can store 
  */
 
-void Converter::encode() {
+void Converter::encode(char* inputFilePath, char* outputFilePath) {
+
+	FILE* inputFile = fopen(inputFilePath, "rb");
+
+	FILE* outputFile = fopen(outputFilePath, "wb");
 	
-	cout << "Finding the best resolution" << endl;
+	if (!checkFiles(inputFile, outputFile))
+		return;
+	
+	uintmax_t inputFileSize = fs::file_size(inputFilePath);
 
-	auto resolution = bestResolution();
-
-	// The amount of extra bytes that were added
+	auto resolution = bestResolution(inputFileSize);
 
 	uintmax_t extraBytes = resolution->height * resolution->width * 3 - inputFileSize;
 
-	cout << "Initializing PNG" << endl;
+	cout << "Reading bytes from the input file" << endl;
 
-	ImagePNG outputPNG(outputFilePath, "wb");
+	auto byteData = readBytes(inputFile, inputFileSize, extraBytes);
 
-	outputPNG.create(resolution->width, resolution->height);
+	fclose(inputFile);
+
+	cout << "Writing the data to the PNG" << endl;
+
+	ImagePNG outputPNG;
+
+	outputPNG.write(byteData, outputFile, resolution->width, resolution->height);
 
 	delete resolution;
 
-	cout << "Reading byte data from input file" << endl;
+	delete[] byteData;
 
-	auto byteData = readBytes(extraBytes);
-
-	cout << "Writing the data to PNG" << endl;
-
-	outputPNG.write(byteData);
+	fclose(outputFile);
 }
 
 /* The decoding is the same, but in reverse:
@@ -207,7 +189,14 @@ void Converter::encode() {
  * 4. The last X bytes are ignored and not added.
  */
 
-void Converter::decode() {
+void Converter::decode(char* inputFilePath, char* outputFilePath) {
 
+	FILE* inputFile = fopen(inputFilePath, "rb");
+
+	FILE* outputFile = fopen(outputFilePath, "wb");
+	
+	if (!checkFiles(inputFile, outputFile))
+		return;
+	
 }
 

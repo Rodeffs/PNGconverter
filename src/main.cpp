@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
 
 	// Now pass the filenames to Converter
 
-	Converter converter(inputFilePath, outputFilePath);
+	Converter converter;
 
 	// Checking whether to convert or to deconvert the input file, conversion is the default
 
@@ -70,10 +70,10 @@ int main(int argc, char *argv[]) {
 			cout << "Error, conflicting switches. Use either -e or -d" << endl;
 			return 0;
 		}
-		converter.decode();
+		converter.decode(inputFilePath, outputFilePath);
 	}
 	else 
-		converter.encode();
+		converter.encode(inputFilePath, outputFilePath);
 
 	return 0;
 }
