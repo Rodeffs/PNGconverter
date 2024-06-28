@@ -130,6 +130,12 @@ Resolution* Converter::bestResolution(uintmax_t fileSize) {
 	if (leftoverPixels > 0)
 		resolution->height += 1;
 
+	if (resolution->height > 1000000 || resolution->width > 1000000) { // libpng default max height and width, otherwise might be buffer overflow 
+		cout << "Error, the input file is too large" << endl;
+		delete resolution;
+		return nullptr;
+	}
+
 	return resolution;
 }
 
@@ -162,6 +168,12 @@ void Converter::encode(char* inputFilePath, char* outputFilePath) {
 	uintmax_t inputFileSize = fs::file_size(inputFilePath);
 
 	auto resolution = bestResolution(inputFileSize);
+
+	if (resolution == nullptr) {
+		fclose(inputFile);
+		fclose(outputFile);
+		return;
+	}
 
 	uintmax_t extraBytes = resolution->height * resolution->width * 3 - inputFileSize;
 
@@ -203,13 +215,22 @@ void Converter::decode(char* inputFilePath, char* outputFilePath) {
 
 	ImagePNG inputPNG;
 
+	cout << "Reading pixel data" << endl;
+
 	auto byteData = inputPNG.read(inputFile);
 
 	fclose(inputFile);
 
+	if (byteData == nullptr) {
+		fclose(outputFile);
+		return;
+	}
+
 	auto extraBytes = bytesToInt(byteData);
 
 	auto byteDataSize = inputPNG.getReadDataSize();
+
+	cout << "Writing byte data to file" << endl;
 	
 	try {
 		for (uintmax_t i = 9; i < byteDataSize - extraBytes; i++)

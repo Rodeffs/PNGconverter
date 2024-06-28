@@ -2,45 +2,19 @@
 #include <cstdint>
 #include <cstdio>
 #include <iostream>
+#include <png.h>
+#include <pngconf.h>
 
 using std::cout;
 using std::endl;
 using std::perror;
-
-ImagePNG::ImagePNG() {
-
-	// A pointer to the resulting PNG
-
-	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-	
-	// This is the struct that hold pixel data
-
-	info_ptr = png_create_info_struct(png_ptr);
-
-	// Error handling idk if incorrect
-	
-	if (setjmp(png_jmpbuf(png_ptr))) {
-		png_destroy_write_struct(&png_ptr, &info_ptr);
-		cout << "Error when modifying PNG" << endl;
-		return;
-	}
-}
-
-ImagePNG::~ImagePNG() {
-
-	if (info_ptr != NULL)
-		png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
-
-	if (png_ptr != NULL)
-		png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
-}
 
 uintmax_t ImagePNG::getReadDataSize() {
 
 	return readDataSize;
 }
 
-int ImagePNG::checkIfPng(FILE *file) {
+int ImagePNG::checkIfPNG(FILE *file) {
 
 	unsigned char buffer[8];
 
@@ -55,6 +29,22 @@ void ImagePNG::write(unsigned char* data, FILE* outputFile, uintmax_t width, uin
 
 	if (!outputFile) {
 		perror("Error in pngUtils, unable to open output file");
+		return;
+	}
+
+	// A pointer to the resulting PNG
+
+	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	
+	// info_ptr stores all the information about the PNG
+
+	info_ptr = png_create_info_struct(png_ptr);
+
+	// Error handling
+	
+	if (setjmp(png_jmpbuf(png_ptr))) {
+		png_destroy_write_struct(&png_ptr, &info_ptr);
+		cout << "Error when modifying PNG" << endl;
 		return;
 	}
 
@@ -76,18 +66,21 @@ void ImagePNG::write(unsigned char* data, FILE* outputFile, uintmax_t width, uin
 
 	png_bytep row = new png_byte[3 * width * sizeof(png_byte)];
 
-	int i = 0;
-	for (unsigned int y = 0; y < height; y++) {
-		for (unsigned int x = 0; x < width*3; x++) {
-			row[x] = data[i];
-			i++;
-		}
+	for (uintmax_t y = 0; y < height; y++) {
+		for (uintmax_t x = 0; x < width*3; x++)
+			row[x] = data[y*height*3 + x];
 		png_write_row(png_ptr, row);
 	}
+
+	// Getting rid of the data
 
 	png_write_end(png_ptr, NULL);
 
 	delete[] row;
+
+	png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
+
+	png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
 }
 
 unsigned char* ImagePNG::read(FILE* inputFile) {
@@ -97,5 +90,77 @@ unsigned char* ImagePNG::read(FILE* inputFile) {
 		return nullptr;
 	}
 
-	return nullptr;
+	if (!checkIfPNG(inputFile)) {
+		cout << "Error, the input file is not a PNG";
+		return nullptr;
+	}
+	
+	// A pointer to the existing PNG
+
+	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+
+	info_ptr = png_create_info_struct(png_ptr);
+
+	// Error handling
+	
+	if (setjmp(png_jmpbuf(png_ptr))) {
+		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+		cout << "Error when reading PNG" << endl;
+		return nullptr;
+	}
+
+	png_init_io(png_ptr, inputFile);
+	
+	// Since we already read the first 8 bytes to check if it's a PNG, skip them
+
+	png_set_sig_bytes(png_ptr, 8);
+	
+	// Reading info about the PNG
+
+	png_read_info(png_ptr, info_ptr);
+
+	png_uint_32 width, height;
+
+	int bit_depth, color_type, interlace_method, compression_method, filter_method;
+
+	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_method, &compression_method, &filter_method);
+	
+	// Checking if it was encoded with the needed parameters
+
+	if ((bit_depth != 8) || (width > 1000000) || (height > 1000000) || (color_type != PNG_COLOR_TYPE_RGB) || (interlace_method != PNG_INTERLACE_NONE)) {
+		cout << "Error, this PNG can't be decoded" << endl;
+		return nullptr;
+	}
+	
+	// Getting pixel value data
+	
+	readDataSize = height * width * 3;	
+
+	png_bytepp row_pointers = (png_bytepp)png_malloc(png_ptr, sizeof(png_bytepp) * height);
+
+	for (int i = 0; i < height; i++)
+		row_pointers[i] = (png_bytep)png_malloc(png_ptr, width * 3);
+
+	png_set_rows(png_ptr, info_ptr, row_pointers);
+	
+	// Converting the pixel data to byte data
+	
+	unsigned char* byteData = new unsigned char[readDataSize];
+
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width*3; x++)
+			byteData[y*height*3 + x] = row_pointers[y][x];
+	}
+
+	// Getting rid of the data
+
+	png_read_end(png_ptr, NULL);
+
+	png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
+
+	png_destroy_read_struct(&png_ptr, (png_infopp)NULL, (png_infopp)NULL);
+
+//	free(row_pointers);
+
+	return byteData;
 }

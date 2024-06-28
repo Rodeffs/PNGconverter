@@ -14,11 +14,11 @@ private:
 	uintmax_t readDataSize = 0; // a bit crappy way to get information about pixel data size
 
 public:
-	ImagePNG();
+	ImagePNG() = default;
 	
-	~ImagePNG();
+	~ImagePNG() = default;
 
-	int checkIfPng(FILE* file);
+	int checkIfPNG(FILE* file);
 
 	void write(unsigned char* data, FILE* outputFile, uintmax_t width, uintmax_t height); // writes pixel data to PNG
 
