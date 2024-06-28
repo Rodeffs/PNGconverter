@@ -1,4 +1,5 @@
 #include "../inc/Converter.hpp"
+#include <cstdint>
 
 Converter::Converter(char* inFilePath, char* outFilePath) {
 
@@ -42,7 +43,37 @@ char* Converter::getOutputFilePath() {
 	return outputFilePath;
 }
 
-unsigned char* Converter::readBytes(int extraBytes) {
+unsigned char* Converter::intToBytes(uintmax_t value) {
+	
+	// Convert the unsigned int amount of extra bytes to bytes to be encoded into PNG
+
+	unsigned char* convert = new unsigned char[8];
+
+	uintmax_t temp = value;
+
+	for (int i = 7; i >= 0; i--) {
+		convert[i] = temp % 256;
+		temp >>= 8;
+	}
+
+	return convert;
+}
+
+uintmax_t Converter::bytesToInt(unsigned char* byteData) {
+
+	// Decode the amount of extra bytes
+
+	uintmax_t decoded = 0;
+
+	for (int i = 0; i < 8; i++) {
+		decoded <<= 8;
+		decoded += byteData[i];
+	}
+
+	return decoded;
+}
+
+unsigned char* Converter::readBytes(uintmax_t extraBytes) {
 
 	FILE* inputFile = fopen(inputFilePath, "rb");
 
@@ -51,21 +82,24 @@ unsigned char* Converter::readBytes(int extraBytes) {
 		return nullptr;
 	}
 
-	unsigned char* data = new unsigned char[3 + inputFileSize + extraBytes];
+	unsigned char* data = new unsigned char[9 + inputFileSize + extraBytes];
 
-	// The very first pixel values as discussed below
+	// Encoding first three pixels
 
 	data[0] = 0;
 
-	data[1] = (extraBytes == 2) ? 255 : 0;
+	auto extraValues = intToBytes(extraBytes);
 
-	data[2] = (extraBytes != 0) ? 255 : 0;
+	for (int i = 0; i < 8; i++)
+		data[i+1] = extraValues[i];
+
+	delete[] extraValues;
 	
 	// Converting the initial data into byte data
 
 	try {
 		for (uintmax_t i = 0; i < inputFileSize; i++)
-			data[i+3] = std::fgetc(inputFile); 
+			data[i+9] = std::fgetc(inputFile); 
 	}
 	catch (const std::exception& e) {
 		cout << e.what() << endl;
@@ -76,47 +110,82 @@ unsigned char* Converter::readBytes(int extraBytes) {
 	// Adding extra bytes if there are any
 
 	for (int i = 0; i < extraBytes; i++) 
-		data[3 + inputFileSize + i] = 0;
+		data[9 + inputFileSize + i] = 0;
 	
 	fclose(inputFile);
 
 	return data;
 } 
 
+Resolution* Converter::bestResolution() {
+
+/* The idea is to store image using as less pixels as possible, while also making it resemble a square as much as possible.
+ * To do that first we need to know how many pixels the original file takes, which we can calculate by dividing the original
+ * byte size by 3 (every pixel is 3 bytes), rounding it up and adding the reserved first three pixels.
+ * Next, we calculate the square root of the result, round it down and use the number as the current resolution.
+ * Then we find the amount of leftover pixels if we were to use this resolution.
+ * If there are none, then we keep it
+ * If there is some, then we increase the height by 1 and substract this value from left over pixels
+ * If the resulting number is positive, it means there are still some leftover pixels left, which we can include by
+ * increasing the width as well
+ */
+	uintmax_t totalPixels = 3 + ceil(inputFileSize / 3);
+
+	Resolution* resolution = new Resolution;
+
+	resolution->height = floor(sqrt(totalPixels));
+
+	resolution->width = resolution->height;
+
+	int leftoverPixels = totalPixels - resolution->height * resolution->width;
+
+	if (leftoverPixels > 0) {
+		resolution->height += 1;
+		leftoverPixels -= resolution->height;
+	}
+
+	if (leftoverPixels > 0)
+		resolution->width += 1;
+
+	return resolution;
+}
+
 /* So the way I plan to convert the file to PNG is this:
- * 1. The resolution of the output PNG is set to X by X pixels, where X is the ceil(sqrt(2 + original file size / 3))
- * 2. The first three pixels (72 bits of data) are reserved and store information about the excessive bytes:
- * 	2.1. First, calculate value of (3 - original file size % 3) % 3, so that the last pixel of actual data has 3 bytes and not 2 or 1
- * 	2.2. Then calculate X - original file size
- * 	2.3. Add those values together to get a number of extra bytes in the image
- * 	2.4. Store this value in the first three pixels.
- * 3. Each byte from the original file is converted into a RGB value (from 0 to 255).
- * 4. Every 3 encoded bytes are then grouped together to form an RGB value for every pixel.
- * 5. All extra bytes are always 0
+ * 1. Calculate resolution
+ * 2. The first three pixels (72 bits of data) are reserved and store information about the excess bytes, which is calculated
+ * by substracting original file size from X
+ * 3. Each byte from the original file is converted into a RGB value (from 0 to 255) and stored to an array.
+ * 4. Then extra bytes are appended to the array as random integers from 0 to 255.
+ * 5. Every three bytes from the array are read and converted into an RGB value (the amount of bytes will always be divisible by 3) for a single pixel
+ * 6. This pixel is added to the PNG and the process continues row by row until the PNG is fully encoded.
  *
  * Since unsigned int size is 64 bits (8 bytes) for most platforms and a pixel is encoded with 24 bits (3 bytes) of data, I had to reserved
- * the first 3 pixels (72 bits = 9 bytes) to store that info, which means that the first byte of the first reserved pixel will always be 0
- * As I don't really know how to encode transparency with this library (and TBH don't want to know) and using alpha-channels would double
- * the PNG size, I think this solution is good enough to store info about excessive bytes.
- * It would only fail in case the amount of excess data is 2^64 bytes, that would require the initial file size prior to conversion to be
- * at least 2^64 * (2^64 - 1) bytes, which is more than 2^27 quettabytes of data and I think that it's decent enough for my project 
+ * the first 3 pixels (72 bits = 9 bytes) to store that info, which means that the first byte of the first reserved pixel will always be 0 (it will never have red).
+ * As I don't know how to encode transparency with this library (and TBH I don't really want to know) and using alpha-channels would double
+ * the PNG size, I think this solution is okay.
+ * It would only fail in case the amount of excess data is 2^64 bytes, which would require the initial file size prior to encoding to be
+ * at least 2^128 - 2^64 bytes, roughly 2^68 EiB of data, waaaayyy more than any file system can store 
  */
 
 void Converter::encode() {
 	
-	cout << "Configuring PNG resolution" << endl;
+	cout << "Finding the best resolution" << endl;
 
-	uintmax_t resolution = ceil(sqrt(1 + inputFileSize / 3));
+	auto resolution = bestResolution();
+
+	// The amount of extra bytes that were added
+
+	uintmax_t extraBytes = resolution->height * resolution->width * 3 - inputFileSize;
 
 	cout << "Initializing PNG" << endl;
 
 	ImagePNG outputPNG(outputFilePath, "wb");
 
-	outputPNG.create(resolution, resolution);
+	outputPNG.create(resolution->width, resolution->height);
+
+	delete resolution;
 
 	cout << "Reading byte data from input file" << endl;
-
-	int extraBytes = (3 - inputFileSize % 3) % 3;
 
 	auto byteData = readBytes(extraBytes);
 

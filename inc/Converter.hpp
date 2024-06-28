@@ -15,6 +15,14 @@ using std::cout;
 using std::endl;
 using std::sqrt;
 using std::ceil;
+using std::floor;
+
+struct Resolution {
+
+	uintmax_t width;
+
+	uintmax_t height;
+};
 
 class Converter {
 
@@ -25,7 +33,13 @@ private:
 
 	uintmax_t inputFileSize;
 
-	unsigned char* readBytes(int extraBytes);  // reads the original file byte by byte and adds extra info needed for decoding
+	unsigned char* intToBytes(uintmax_t value);
+
+	uintmax_t bytesToInt(unsigned char* byteData);
+
+	unsigned char* readBytes(uintmax_t extraBytes);  // reads the original file byte by byte and adds extra bytes for decoding
+	
+	Resolution* bestResolution();
 
 	void calculateInputFileSize();
 
