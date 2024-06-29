@@ -28,7 +28,7 @@ NOTE: if no height or width were entered, the program will automatically pick th
 
 ### Why is it useful
 
-Some websites, say imageboards, don't allow to post any files besides images. If you wanted to share some other file via them, you'd have to upload it somewhere and then share a link (those could be banned too).
+Some websites, say imageboards, don't allow to post any files besides images. If you wanted to share some other file via them, you'd have to upload it somewhere and then share a link (those could be banned too)
 
 By utilising this program, you can convert this file to PNG, send it, and anybody can convert it back to original and since PNG format is lossless no data is lost
 
@@ -42,11 +42,9 @@ This means that the maximum possible size of input file is ~2.7 TiB, which is go
 
 ### Example
 
-I'll use libpng official documentation as an example input
+Let's say, I've got some file named example_input.txt and I want to encode it
 
-Here, I named it example_input.txt
-
-Then I compile the program and run it:
+First, I need compile the program, then run:
 
 ```
 PNGconverter -e example_input.txt -o example_output.png
@@ -56,15 +54,13 @@ The resulting image:
 
 ![Image](example_output.png "Example")
 
-Next, I want to convert it back:
+Next, if I wanted to convert it back, I'd run:
 
 ```
 PNGconverter -d example_output.png -o example_output.txt
 ```
 
-The resulting output file is identical to the initial input
-
-If I wanted the output image to be a different resolution, say 500 by 155, then I'd do:
+If I wanted the output image to be a different resolution, say 500 by 155, then the input would look like this:
 
 ```
 PNGconverter -e example_input.txt -o example_output.png -w 500 -h 155
