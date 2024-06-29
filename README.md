@@ -26,6 +26,12 @@ Some websites, say imageboards, don't allow to post any files besides images. If
 
 By utilising this program, you can convert this file to PNG, send it, and anybody can convert it back to original and since PNG format is lossless no data is lost
 
+### Limitations
+
+The default limit for PNG size in libpng is 10^6 by 10^6 pixels. I decided to not change the limit for the sake of safety.
+
+This means that the maximum possible size of input file is ~2.7 TiB, which is good enough for most cases 
+
 ### Example
 
 I'll use libpng official documentation as an example input
