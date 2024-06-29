@@ -64,10 +64,10 @@ PNGconverter -d example_output.png -o example_output.txt
 
 The resulting output file is identical to the initial input
 
-If I wanted the output image to be a different resolution, say 500 by 500, then I'd do:
+If I wanted the output image to be a different resolution, say 500 by 155, then I'd do:
 
 ```
-PNGconverter -e example_input.txt -o example_output.png -w 500 -h 500
+PNGconverter -e example_input.txt -o example_output.png -w 500 -h 155
 ```
 
 Now the resulting image is:
