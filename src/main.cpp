@@ -5,10 +5,11 @@
 
 using std::find;
 using std::string;
+using std::stoi;
 using std::cout;
 using std::endl;
 
-bool parameterExists(char** begin, char** end, const string& parameter) {  // checks that the input parameter exists
+bool passed(char** begin, char** end, const string& parameter) {  // checks that the input parameter exists
 
 	if (find(begin, end, parameter) != end)
 		return true;
@@ -16,7 +17,7 @@ bool parameterExists(char** begin, char** end, const string& parameter) {  // ch
 	return false;
 }
 
-char* parseInput(char** begin, char** end, const string& parameter) {  // gets the value of the input parameter
+char* parse(char** begin, char** end, const string& parameter) {  // gets the value of the input parameter
 
 	char** iterator = find(begin, end, parameter);
 
@@ -30,51 +31,76 @@ int main(int argc, char *argv[]) {
 	
 	// If no parameters are given or switch --help is used
 
-	if (argc == 1 || parameterExists(argv, argv+argc, "--help") || parameterExists(argv, argv+argc, "-h")) {
-		cout << "Usage:\n\n-i [file] or --input-file [file]\tselect the input file to read from\n\n-o [file] or --output-file [file]\tselect the output file to write to\n\n-e or --encode\t\t\t\tencoding, assumed by default\n\n-d or --decode\t\t\t\tdecoding\n\n-h or --help\t\t\t\tdisplay this help message" << endl;
+	if (argc == 1 || passed(argv, argv+argc, "--help")) {
+		cout << "Usage:\n\n-e [file]\tencode the given file\n\n-d [file]\tdecode the given file\n\n-o [file]\toutput the encoded/decoded data to a given file\n\n-h [integer]\tthe height of the PNG to be encoded\n\n-w [integer]\tthe width of the PNG to be encoded\n\nNOTE: if no height or width were entered, the program will automatically pick the best resolution\n\n--help\t\tdisplay this help message" << endl;
+		return 0;
+	}
+
+	// Obvious errors out of the way
+
+	if (!passed(argv, argv+argc, "-o") || !(passed(argv, argv+argc, "-e") || passed(argv, argv+argc, "-d"))) {
+		cout << "Error, not enough parameters were specified. Use --help to get help" << endl;
 		return -1;
 	}
-	
-	// Parsing the input file
 
-	char* inputFilePath = parseInput(argv, argv+argc, "-i");
+	// Parsing the specified parameters for decoding
 
-	if (!inputFilePath)
-		inputFilePath = parseInput(argv, argv+argc, "--input-file");
+	Converter converter;
+
+	if (passed(argv, argv+argc, "-d")) {
+
+		if (passed(argv, argv+argc, "-e") || passed(argv, argv+argc, "-h") || passed(argv, argv+argc, "-w")) {
+			cout << "Error, conflicting parameters. Use --help to get help" << endl;
+			return -1;
+		}
+
+		char* inputFilePath = parse(argv, argv+argc, "-d");
+
+		if (!inputFilePath) {
+			cout << "Error, no input file is given. Use --help to get help" << endl;
+			return -1;
+		}
+
+		char* outputFilePath = parse(argv, argv+argc, "-o");
+
+		if (!outputFilePath) {
+			cout << "Error, no output file is given. Use -h or --help to get help" << endl;
+			return -1;
+		}
+
+		converter.setInputOutputFiles(inputFilePath, outputFilePath);
+
+		converter.decode();
+
+		return 0;
+	}
+
+	// Parsing the specified parameters for encoding
+
+	char* inputFilePath = parse(argv, argv+argc, "-e");
 
 	if (!inputFilePath) {
 		cout << "Error, no input file is given. Use --help to get help" << endl;
 		return -1;
 	}
 
-	// Parsing the output file
-
-	char* outputFilePath = parseInput(argv, argv+argc, "-o");
-
-	if (!outputFilePath)
-		outputFilePath = parseInput(argv, argv+argc, "--output-file");
+	char* outputFilePath = parse(argv, argv+argc, "-o");
 
 	if (!outputFilePath) {
 		cout << "Error, no output file is given. Use -h or --help to get help" << endl;
 		return -1;
 	}
 
-	// Now pass the filenames to Converter
+	converter.setInputOutputFiles(inputFilePath, outputFilePath);
 
-	Converter converter;
+	auto width = parse(argv, argv+argc, "-w");
 
-	// Checking whether to convert or to deconvert the input file, conversion is the default
+	auto height = parse(argv, argv+argc, "-h");
 
-	if (parameterExists(argv, argv+argc, "-d") || parameterExists(argv, argv+argc, "--decode")) {
-		if (parameterExists(argv, argv+argc, "-e") || parameterExists(argv, argv+argc, "--encode")) {
-			cout << "Error, conflicting switches. Use either -e or -d" << endl;
-			return -1;
-		}
-		converter.decode(inputFilePath, outputFilePath);
-	}
-	else 
-		converter.encode(inputFilePath, outputFilePath);
+	if (width && height)
+		converter.setOutputImageResolution(stoi(width), stoi(height));
 	
+	converter.encode();
 
 	return 0;
 }

@@ -1,6 +1,7 @@
 #include "../inc/Converter.hpp"
 #include "../inc/pngUtils.hpp"
 #include <cstdint>
+#include <cstdio>
 #include <filesystem>
 #include <cmath>
 #include <iostream>
@@ -16,17 +17,131 @@ using std::fputc;
 
 namespace fs = std::filesystem;
 
+Converter::Converter(char* inputFilePath, char* outputFilePath) {
+	
+	inputFile = fopen(inputFilePath, "rb");
+
+	if (!inputFile) {
+		perror("Error in converter, unable to open input file");
+		inputFile = nullptr;
+		return;
+	}
+	
+	inputFileSize = fs::file_size(inputFilePath);
+
+	outputFile = fopen(outputFilePath, "wb");
+	
+	if (!outputFile) {
+		perror("Error in converter, unable to open output file");
+		outputFile = nullptr;
+		return;
+	}
+}
+
+Converter::~Converter() {
+	
+	if (inputFile)
+		fclose(inputFile);
+
+	if (outputFile)
+		fclose(outputFile);
+}
+
+void Converter::setInputOutputFiles(char* inputFilePath, char* outputFilePath) {
+	
+	// Never forget to close old files before changing!
+
+	if (inputFile)
+		fclose(inputFile);
+
+	if (outputFile)
+		fclose(outputFile);
+
+	inputFile = fopen(inputFilePath, "rb");
+
+	if (!inputFile) {
+		perror("Error in converter, unable to open input file");
+		return;
+	}
+	
+	inputFileSize = fs::file_size(inputFilePath);
+
+	outputFile = fopen(outputFilePath, "wb");
+	
+	if (!outputFile) {
+		perror("Error in converter, unable to open output file");
+		return;
+	}
+}
+
+void Converter::setInputFile(char* inputFilePath) {
+	
+	// Never forget to close old files before changing!
+
+	if (inputFile)
+		fclose(inputFile);
+
+	inputFile = fopen(inputFilePath, "rb");
+
+	if (!inputFile) {
+		perror("Error in converter, unable to open input file");
+		return;
+	}
+	
+	inputFileSize = fs::file_size(inputFilePath);
+}
+
+void Converter::setOutputFile(char* outputFilePath) {
+	
+	// Never forget to close old files before changing!
+
+	if (outputFile)
+		fclose(outputFile);
+
+	outputFile = fopen(outputFilePath, "wb");
+	
+	if (!outputFile) {
+		perror("Error in converter, unable to open output file");
+		return;
+	}
+}
+
+void Converter::setOutputImageResolution(unsigned int width, unsigned int height) {
+
+	outputImageWidth = width, outputImageHeight = height;
+}
+
+void Converter::setOutputImageWidth(unsigned int width) {
+
+	outputImageWidth = width;
+}
+
+void Converter::setOutputImageHeight(unsigned int height) {
+
+	outputImageHeight = height;
+}
+
+unsigned int Converter::getOutputImageWidth() {
+
+	return outputImageWidth;
+}
+
+unsigned int Converter::getOutputImageHeight() {
+
+	return outputImageHeight;
+}
+
+// Actually useful code begins here
+
 unsigned char* Converter::intToBytes(uintmax_t value) {
 	
 	// Convert the unsigned int amount of extra bytes to bytes to be encoded into PNG
 
 	unsigned char* convert = new unsigned char[8];
 
-	uintmax_t temp = value;
-
 	for (int i = 7; i >= 0; i--) {
-		convert[i] = temp % 256;
-		temp >>= 8;
+		convert[i] = value % 256;
+		value >>= 8;
 	}
 
 	return convert;
@@ -46,22 +161,8 @@ uintmax_t Converter::bytesToInt(unsigned char* byteData) {
 	return decoded;
 }
 
-bool Converter::checkFiles(FILE* inputFile, FILE* outputFile) {
 
-	if (!inputFile) {
-		perror("Error in converter, unable to open input file");
-		return false;
-	}
-
-	if (!outputFile) {
-		perror("Error in converter, unable to open output file");
-		return false;
-	}
-
-	return true;
-}
-
-unsigned char* Converter::readBytes(FILE* inputFile, uintmax_t inputFileSize, uintmax_t extraBytes) {
+unsigned char* Converter::readBytes(uintmax_t extraBytes) {
 
 	unsigned char* data = new unsigned char[9 + inputFileSize + extraBytes];
 
@@ -91,7 +192,7 @@ unsigned char* Converter::readBytes(FILE* inputFile, uintmax_t inputFileSize, ui
 	return data;
 } 
 
-Resolution* Converter::bestResolution(uintmax_t fileSize) {
+bool Converter::findBestResolution() {
 
 /* The idea is to store image using as less pixels as possible, while also making it resemble a square as much as possible.
  * To do that first we need to know how many pixels the original file takes, which we can calculate by dividing the original
@@ -105,30 +206,27 @@ Resolution* Converter::bestResolution(uintmax_t fileSize) {
  */
 	// In case the initial file size is not divisible by 3, add this amount of extra bytes, so it can be converted to pixels
 
-	int toBeDivisibleBy3 = (3 - fileSize % 3) % 3;
+	int toBeDivisibleBy3 = (3 - inputFileSize % 3) % 3;
 
-	uintmax_t totalPixels = 3 + (fileSize + toBeDivisibleBy3) / 3;
+	uintmax_t totalPixels = 3 + (inputFileSize + toBeDivisibleBy3) / 3;
 	
-	Resolution* resolution = new Resolution;
+	outputImageHeight = sqrt(totalPixels);
 
-	resolution->height = sqrt(totalPixels);
+	outputImageWidth = outputImageHeight;
 
-	resolution->width = resolution->height;
-	
-	while (resolution->height * resolution->width < totalPixels) {
-		if (resolution->width == resolution->height)
-			resolution->width++;
+	while (outputImageHeight * outputImageWidth < totalPixels) {
+		if (outputImageWidth == outputImageHeight)
+			outputImageWidth++;
 		else
-			resolution->height++;
+			outputImageHeight++;
 	}
 	
-	if (resolution->height > 1000000 || resolution->width > 1000000) { // libpng default max height and width, otherwise might be buffer overflow 
+	if (outputImageHeight > 1000000 || outputImageWidth > 1000000) { // libpng default max height and width, otherwise might be buffer overflow 
 		cout << "Error, the input file is too large" << endl;
-		delete resolution;
-		return nullptr;
+		return false;
 	}
-
-	return resolution;
+	
+	return true;
 }
 
 /* So the way I plan to convert the file to PNG is this:
@@ -148,44 +246,30 @@ Resolution* Converter::bestResolution(uintmax_t fileSize) {
  * at least 2^128 - 2^64 bytes, roughly 2^68 EiB of data, waaaayyy more than any file system can store 
  */
 
-void Converter::encode(char* inputFilePath, char* outputFilePath) {
+void Converter::encode() {
 
-	FILE* inputFile = fopen(inputFilePath, "rb");
-
-	FILE* outputFile = fopen(outputFilePath, "wb");
-	
-	if (!checkFiles(inputFile, outputFile))
-		return;
-	
-	uintmax_t inputFileSize = fs::file_size(inputFilePath);
-
-	auto resolution = bestResolution(inputFileSize);
-
-	if (resolution == nullptr) {
-		fclose(inputFile);
-		fclose(outputFile);
+	if (!inputFile || !outputFile) {
+		cout << "Error, input/output files weren't provided" << endl;
 		return;
 	}
 	
-	uintmax_t extraBytes = resolution->height * resolution->width * 3 - 9 - inputFileSize;
+	if (outputImageHeight * outputImageWidth * 3 < (9 + inputFileSize))
+		if (!findBestResolution())
+			return;
+	
+	uintmax_t extraBytes = outputImageHeight * outputImageWidth * 3 - 9 - inputFileSize;
 
 	cout << "Reading the data from the input file" << endl;
 
-	auto byteData = readBytes(inputFile, inputFileSize, extraBytes);
-
-	fclose(inputFile);
+	auto byteData = readBytes(extraBytes);
 
 	cout << "Writing the data to the PNG" << endl;
 
 	ImagePNG outputPNG;
 
-	outputPNG.write(byteData, outputFile, resolution->width, resolution->height, resolution->height * resolution->width);
-
-	delete resolution;
+	outputPNG.write(byteData, outputFile, outputImageWidth, outputImageHeight, outputImageHeight * outputImageWidth);
 
 	delete[] byteData;
-
-	fclose(outputFile);
 
 	cout << "Done!" << endl;
 }
@@ -198,14 +282,12 @@ void Converter::encode(char* inputFilePath, char* outputFilePath) {
  * 4. The last X bytes are ignored.
  */
 
-void Converter::decode(char* inputFilePath, char* outputFilePath) {
+void Converter::decode() {
 
-	FILE* inputFile = fopen(inputFilePath, "rb");
-
-	FILE* outputFile = fopen(outputFilePath, "wb");
-	
-	if (!checkFiles(inputFile, outputFile))
+	if (!inputFile || !outputFile) {
+		cout << "Error, input/output file weren't provided" << endl;
 		return;
+	}
 
 	ImagePNG inputPNG;
 
@@ -213,21 +295,15 @@ void Converter::decode(char* inputFilePath, char* outputFilePath) {
 
 	auto byteData = inputPNG.read(inputFile);
 
-	fclose(inputFile);
-
-	if (byteData == nullptr) {
-		fclose(outputFile);
+	if (byteData == nullptr)
 		return;
-	}
 
-	uintmax_t extraBytes = bytesToInt(byteData), byteDataSize = inputPNG.getReadDataSize();
+	uintmax_t extraBytes = bytesToInt(byteData), byteDataSize = inputPNG.getImageSize();
 	
 	cout << "Writing the data to output file" << endl;
 
 	for (uintmax_t i = 9; i < (byteDataSize - extraBytes); i++)
 		fputc(byteData[i], outputFile);
-
-	fclose(outputFile);
 
 	delete[] byteData;
 

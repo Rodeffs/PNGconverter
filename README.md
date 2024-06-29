@@ -11,13 +11,19 @@ You need to have installed libpng library prior to compilation
 ### Usage
 
 ```
--i [file] or --input-file [file]        select the input file to read from
+-e [file]       encode the given file
 
--o [file] or --output-file [file]       select the output file to write to
+-d [file]       decode the given file
 
--e or --encode                          encoding, assumed by default
+-o [file]       output the encoded/decoded data to a given file
 
--d or --decode                          decoding
+-h [integer]    the height of the PNG to be encoded
+
+-w [integer]    the width of the PNG to be encoded
+
+NOTE: if no height or width were entered, the program will automatically pick the best resolution
+
+--help          display this help message
 ```
 
 ### Why is it useful
@@ -43,7 +49,7 @@ Here, I named it example_input.txt
 Then I compile the program and run it:
 
 ```
-PNGconverter -i example_input.txt -o example_output.png
+PNGconverter -e example_input.txt -o example_output.png
 ```
 
 The resulting image:
@@ -53,8 +59,19 @@ The resulting image:
 Next, I want to convert it back:
 
 ```
-PNGconverter -i example_output.png -o example_output.txt -d
+PNGconverter -d example_output.png -o example_output.txt
 ```
 
 The resulting output file is identical to the initial input
- 
+
+If I wanted the output image to be a different resolution, say 500 by 500, then I'd do:
+
+```
+PNGconverter -e example_input.txt -o example_output.png -w 500 -h 500
+```
+
+Now the resulting image is:
+
+![Image](example_output2.png "Example 2")
+
+It can also be decoded back to the original file with no problems

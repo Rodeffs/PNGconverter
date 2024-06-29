@@ -8,9 +8,9 @@ using std::cout;
 using std::endl;
 using std::perror;
 
-uintmax_t ImagePNG::getReadDataSize() {
+uintmax_t ImagePNG::getImageSize() {
 
-	return readDataSize;
+	return imageSize;
 }
 
 int ImagePNG::checkIfPNG(FILE *file) {
@@ -23,7 +23,6 @@ int ImagePNG::checkIfPNG(FILE *file) {
 	return png_sig_cmp(buffer, 0, 8) == 0;  // read the first 8 bytes of the signature and return true if they match
 }
 
-
 void ImagePNG::write(unsigned char* data, FILE* outputFile, uintmax_t width, uintmax_t height, uintmax_t dataSize) {
 
 	if (!outputFile) {
@@ -33,11 +32,11 @@ void ImagePNG::write(unsigned char* data, FILE* outputFile, uintmax_t width, uin
 	
 	// A pointer to the resulting PNG
 
-	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	
 	// info_ptr stores all the information about the PNG
 
-	info_ptr = png_create_info_struct(png_ptr);
+	png_infop info_ptr = png_create_info_struct(png_ptr);
 
 	// Error handling
 	
@@ -93,15 +92,15 @@ unsigned char* ImagePNG::read(FILE* inputFile) {
 	}
 
 	if (!checkIfPNG(inputFile)) {
-		cout << "Error, the input file is not a PNG";
+		cout << "Error, the input file is not a PNG" << endl;
 		return nullptr;
 	}
 	
 	// A pointer to the existing PNG
 
-	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
-	info_ptr = png_create_info_struct(png_ptr);
+	png_infop info_ptr = png_create_info_struct(png_ptr);
 
 	// Error handling
 	
@@ -138,7 +137,7 @@ unsigned char* ImagePNG::read(FILE* inputFile) {
 	
 	// Getting pixel value data
 	
-	readDataSize = height * width * 3;	
+	imageSize = height * width * 3;	
 
 	png_bytepp row_pointers = new png_bytep[height * sizeof(png_bytep)];
 
@@ -151,7 +150,7 @@ unsigned char* ImagePNG::read(FILE* inputFile) {
 	
 	// Converting the pixel data to byte data
 	
-	unsigned char* byteData = new unsigned char[readDataSize];
+	unsigned char* byteData = new unsigned char[imageSize];
 
 	for (uintmax_t y = 0; y < height; y++) {
 		for (uintmax_t x = 0; x < width * 3; x++)
