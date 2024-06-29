@@ -30,7 +30,7 @@ void ImagePNG::write(unsigned char* data, FILE* outputFile, uintmax_t width, uin
 		perror("Error in pngUtils, unable to open output file");
 		return;
 	}
-
+	
 	// A pointer to the resulting PNG
 
 	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
@@ -44,6 +44,8 @@ void ImagePNG::write(unsigned char* data, FILE* outputFile, uintmax_t width, uin
 	if (setjmp(png_jmpbuf(png_ptr))) {
 		png_destroy_write_struct(&png_ptr, &info_ptr);
 		cout << "Error while writing to PNG" << endl;
+		png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
+		png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
 		return;
 	}
 
@@ -66,8 +68,9 @@ void ImagePNG::write(unsigned char* data, FILE* outputFile, uintmax_t width, uin
 	png_bytep row = new png_byte[3 * width * sizeof(png_byte)];
 	
 	for (uintmax_t y = 0; y < height; y++) {
-		for (uintmax_t x = 0; x < width*3; x++)
-			row[x] = data[y*height*3 + x];
+		for (uintmax_t x = 0; x < width * 3; x++)
+			row[x] = data[y * width * 3 + x];
+
 		png_write_row(png_ptr, row);
 	}
 
@@ -128,6 +131,8 @@ unsigned char* ImagePNG::read(FILE* inputFile) {
 
 	if ((bit_depth != 8) || (width > 1000000) || (height > 1000000) || (color_type != PNG_COLOR_TYPE_RGB) || (interlace_method != PNG_INTERLACE_NONE)) {
 		cout << "Error, this PNG can't be decoded" << endl;
+		png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
+		png_destroy_read_struct(&png_ptr, (png_infopp)NULL, (png_infopp)NULL);
 		return nullptr;
 	}
 	
@@ -137,7 +142,7 @@ unsigned char* ImagePNG::read(FILE* inputFile) {
 
 	png_bytepp row_pointers = new png_bytep[height * sizeof(png_bytep)];
 
-	for (int i = 0; i < height; i++)
+	for (uintmax_t i = 0; i < height; i++)
 		row_pointers[i] = new png_byte[width * 3 * sizeof(png_byte)];
 
 	png_set_rows(png_ptr, info_ptr, row_pointers);
@@ -148,16 +153,15 @@ unsigned char* ImagePNG::read(FILE* inputFile) {
 	
 	unsigned char* byteData = new unsigned char[readDataSize];
 
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width*3; x++)
-			byteData[y*height*3 + x] = row_pointers[y][x];
+	for (uintmax_t y = 0; y < height; y++) {
+		for (uintmax_t x = 0; x < width * 3; x++)
+			byteData[y * width * 3 + x] = row_pointers[y][x];
+
+		delete[] row_pointers[y];
 	}
 
 	// Getting rid of the data
 	
-	for (int i = 0; i < height; i++)
-		delete[] row_pointers[i];
-
 	delete[] row_pointers;
 
 	png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);

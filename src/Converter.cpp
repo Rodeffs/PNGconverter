@@ -10,7 +10,6 @@ using std::fclose;
 using std::cout;
 using std::endl;
 using std::sqrt;
-using std::floor;
 using std::perror;
 using std::fgetc;
 using std::fputc;
@@ -72,22 +71,20 @@ unsigned char* Converter::readBytes(FILE* inputFile, uintmax_t inputFileSize, ui
 
 	auto extraValues = intToBytes(extraBytes);
 
-	uintmax_t i = 1;
-
-	for (i; i < 9; i++)
+	for (int i = 0; i < 9; i++)
 		data[i] = extraValues[i-1];
 
 	delete[] extraValues;
 	
 	// Converting the initial data into byte data
 	
-	for (i; i < inputFileSize + 9; i++)
+	for (uintmax_t i = 9; i < (9 + inputFileSize); i++)
 		data[i] = fgetc(inputFile); 
 
 	// Adding extra bytes if there are any
 
 	for (uintmax_t j = 0; j < extraBytes; j++) 
-		data[i + j] = 0;
+		data[9 + inputFileSize + j] = 0;
 	
 	return data;
 } 
@@ -104,28 +101,25 @@ Resolution* Converter::bestResolution(uintmax_t fileSize) {
  * If the resulting number is positive, it means there are still some leftover pixels left, which we can include by
  * increasing the height as well
  */
-	// In case the initial file size is not divisible by 3, add this amount of extra bytes
+	// In case the initial file size is not divisible by 3, add this amount of extra bytes, so it can be converted to pixels
 
 	int toBeDivisibleBy3 = (3 - fileSize % 3) % 3;
 
 	uintmax_t totalPixels = 3 + (fileSize + toBeDivisibleBy3) / 3;
-
+	
 	Resolution* resolution = new Resolution;
 
-	resolution->height = floor(sqrt(totalPixels));
+	resolution->height = sqrt(totalPixels);
 
 	resolution->width = resolution->height;
-
-	int leftoverPixels = totalPixels - resolution->height * resolution->width;
-
-	if (leftoverPixels > 0) {
-		resolution->width += 1;
-		leftoverPixels -= resolution->width;
+	
+	while (resolution->height * resolution->width < totalPixels) {
+		if (resolution->width == resolution->height)
+			resolution->width += 1;
+		else
+			resolution->height += 1;
 	}
-
-	if (leftoverPixels > 0)
-		resolution->height += 1;
-
+	
 	if (resolution->height > 1000000 || resolution->width > 1000000) { // libpng default max height and width, otherwise might be buffer overflow 
 		cout << "Error, the input file is too large" << endl;
 		delete resolution;
@@ -171,7 +165,7 @@ void Converter::encode(char* inputFilePath, char* outputFilePath) {
 		return;
 	}
 	
-	uintmax_t extraBytes = resolution->height * resolution->width * 3 - inputFileSize - 9;
+	uintmax_t extraBytes = resolution->height * resolution->width * 3 - 9 - inputFileSize;
 
 	cout << "Reading bytes from the input file" << endl;
 
@@ -183,7 +177,7 @@ void Converter::encode(char* inputFilePath, char* outputFilePath) {
 
 	ImagePNG outputPNG;
 
-	outputPNG.write(byteData, outputFile, resolution->width, resolution->height, (inputFileSize + 9 + extraBytes));
+	outputPNG.write(byteData, outputFile, resolution->width, resolution->height, resolution->height * resolution->width);
 
 	delete resolution;
 
@@ -224,11 +218,7 @@ void Converter::decode(char* inputFilePath, char* outputFilePath) {
 		return;
 	}
 
-	auto extraBytes = bytesToInt(byteData);
-
-	auto byteDataSize = inputPNG.getReadDataSize();
-
-	cout << "Writing byte data to file" << endl;
+	uintmax_t extraBytes = bytesToInt(byteData), byteDataSize = inputPNG.getReadDataSize();
 
 	for (uintmax_t i = 9; i < (byteDataSize - extraBytes); i++)
 		fputc(byteData[i], outputFile);
