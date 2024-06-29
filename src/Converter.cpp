@@ -296,8 +296,6 @@ void Converter::decode() {
 
 	uintmax_t extraBytes = bytesToInt(byteData), byteDataSize = inputPNG.getImageSize();
 	
-	cout << "Writing the data to the output file" << endl;
-
 	for (uintmax_t i = 9; i < (byteDataSize - extraBytes); i++)
 		fputc(byteData[i], outputFile);
 
