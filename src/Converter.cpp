@@ -61,6 +61,7 @@ void Converter::setInputOutputFiles(char* inputFilePath, char* outputFilePath) {
 
 	if (!inputFile) {
 		perror("Error in converter, unable to open input file");
+		inputFile = nullptr;
 		return;
 	}
 	
@@ -70,6 +71,7 @@ void Converter::setInputOutputFiles(char* inputFilePath, char* outputFilePath) {
 	
 	if (!outputFile) {
 		perror("Error in converter, unable to open output file");
+		outputFile = nullptr;
 		return;
 	}
 }
@@ -85,6 +87,7 @@ void Converter::setInputFile(char* inputFilePath) {
 
 	if (!inputFile) {
 		perror("Error in converter, unable to open input file");
+		inputFile = nullptr;
 		return;
 	}
 	
@@ -102,6 +105,7 @@ void Converter::setOutputFile(char* outputFilePath) {
 	
 	if (!outputFile) {
 		perror("Error in converter, unable to open output file");
+		outputFile = nullptr;
 		return;
 	}
 }
@@ -259,19 +263,13 @@ void Converter::encode() {
 	
 	uintmax_t extraBytes = outputImageHeight * outputImageWidth * 3 - 9 - inputFileSize;
 
-	cout << "Reading the data from the input file" << endl;
-
 	auto byteData = readBytes(extraBytes);
-
-	cout << "Writing the data to the PNG" << endl;
 
 	ImagePNG outputPNG;
 
 	outputPNG.write(byteData, outputFile, outputImageWidth, outputImageHeight, outputImageHeight * outputImageWidth);
 
 	delete[] byteData;
-
-	cout << "Done!" << endl;
 }
 
 /* The decoding is the same, but in reverse:
@@ -285,13 +283,11 @@ void Converter::encode() {
 void Converter::decode() {
 
 	if (!inputFile || !outputFile) {
-		cout << "Error, input/output file weren't provided" << endl;
+		cout << "Error, input/output files weren't provided" << endl;
 		return;
 	}
 
 	ImagePNG inputPNG;
-
-	cout << "Reading pixel data" << endl;
 
 	auto byteData = inputPNG.read(inputFile);
 
@@ -300,13 +296,11 @@ void Converter::decode() {
 
 	uintmax_t extraBytes = bytesToInt(byteData), byteDataSize = inputPNG.getImageSize();
 	
-	cout << "Writing the data to output file" << endl;
+	cout << "Writing the data to the output file" << endl;
 
 	for (uintmax_t i = 9; i < (byteDataSize - extraBytes); i++)
 		fputc(byteData[i], outputFile);
 
 	delete[] byteData;
-
-	cout << "Done!" << endl;
 }
 
