@@ -43,9 +43,18 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
-	// Parsing the specified parameters for decoding
+	// Because both encoding and decoding require output file
+
+	char* outputFilePath = parse(argv, argv+argc, "-o");
+
+	if (!outputFilePath) {
+		cout << "Error, no output file is given. Use -h or --help to get help" << endl;
+		return -1;
+	}
 
 	Converter converter;
+
+	// Parsing the specified parameters for decoding
 
 	if (passed(argv, argv+argc, "-d")) {
 
@@ -58,13 +67,6 @@ int main(int argc, char *argv[]) {
 
 		if (!inputFilePath) {
 			cout << "Error, no input file is given. Use --help to get help" << endl;
-			return -1;
-		}
-
-		char* outputFilePath = parse(argv, argv+argc, "-o");
-
-		if (!outputFilePath) {
-			cout << "Error, no output file is given. Use -h or --help to get help" << endl;
 			return -1;
 		}
 
@@ -81,13 +83,6 @@ int main(int argc, char *argv[]) {
 
 	if (!inputFilePath) {
 		cout << "Error, no input file is given. Use --help to get help" << endl;
-		return -1;
-	}
-
-	char* outputFilePath = parse(argv, argv+argc, "-o");
-
-	if (!outputFilePath) {
-		cout << "Error, no output file is given. Use -h or --help to get help" << endl;
 		return -1;
 	}
 
