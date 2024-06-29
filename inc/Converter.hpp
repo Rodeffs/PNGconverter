@@ -1,6 +1,7 @@
 #pragma once
 
-#include <cstdint>
+#include <cstdint> // there technically isn't much difference between writing uintmax_t and unsigned int, 
+		   // but in theory it means that larger files can be processed, plus it's shorter to type
 #include <cstdio>
 
 class Converter {
@@ -10,9 +11,9 @@ private:
 	
 	FILE* outputFile = nullptr;
 
-	unsigned int outputImageWidth = 0;
+	uintmax_t outputImageWidth = 0;
 
-	unsigned int outputImageHeight = 0;
+	uintmax_t outputImageHeight = 0;
 
 	uintmax_t inputFileSize = 0;
 
@@ -37,15 +38,15 @@ public:
 
 	void setOutputFile(char* outputFilePath);
 	
-	void setOutputImageResolution(unsigned int width, unsigned int height);
+	void setOutputImageResolution(uintmax_t width, uintmax_t height);
 
-	void setOutputImageWidth(unsigned int width);
+	void setOutputImageWidth(uintmax_t width);
 
-	void setOutputImageHeight(unsigned int height);
+	void setOutputImageHeight(uintmax_t height);
 
-	unsigned int getOutputImageWidth();
+	uintmax_t getOutputImageWidth();
 
-	unsigned int getOutputImageHeight();
+	uintmax_t getOutputImageHeight();
 
 	void encode();
 

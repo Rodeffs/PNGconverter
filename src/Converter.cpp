@@ -1,7 +1,5 @@
 #include "../inc/Converter.hpp"
 #include "../inc/pngUtils.hpp"
-#include <cstdint>
-#include <cstdio>
 #include <filesystem>
 #include <cmath>
 #include <iostream>
@@ -110,27 +108,27 @@ void Converter::setOutputFile(char* outputFilePath) {
 	}
 }
 
-void Converter::setOutputImageResolution(unsigned int width, unsigned int height) {
+void Converter::setOutputImageResolution(uintmax_t width, uintmax_t height) {
 
 	outputImageWidth = width, outputImageHeight = height;
 }
 
-void Converter::setOutputImageWidth(unsigned int width) {
+void Converter::setOutputImageWidth(uintmax_t width) {
 
 	outputImageWidth = width;
 }
 
-void Converter::setOutputImageHeight(unsigned int height) {
+void Converter::setOutputImageHeight(uintmax_t height) {
 
 	outputImageHeight = height;
 }
 
-unsigned int Converter::getOutputImageWidth() {
+uintmax_t Converter::getOutputImageWidth() {
 
 	return outputImageWidth;
 }
 
-unsigned int Converter::getOutputImageHeight() {
+uintmax_t Converter::getOutputImageHeight() {
 
 	return outputImageHeight;
 }
@@ -139,7 +137,7 @@ unsigned int Converter::getOutputImageHeight() {
 
 unsigned char* Converter::intToBytes(uintmax_t value) {
 	
-	// Convert the unsigned int amount of extra bytes to bytes to be encoded into PNG
+	// Convert the uintmax_t amount of extra bytes to bytes to be encoded into PNG
 
 	unsigned char* convert = new unsigned char[8];
 
@@ -242,7 +240,7 @@ bool Converter::findBestResolution() {
  * 5. Every three bytes from the array are read and converted into an RGB value (the amount of bytes will always be divisible by 3) for a single pixel
  * 6. This pixel is added to the PNG and the process continues row by row until the PNG is fully encoded.
  *
- * Since unsigned int size is 64 bits (8 bytes) for most platforms and a pixel is encoded with 24 bits (3 bytes) of data, I had to reserved
+ * Since uintmax_t size is 64 bits (8 bytes) for most platforms and a pixel is encoded with 24 bits (3 bytes) of data, I had to reserved
  * the first 3 pixels (72 bits = 9 bytes) to store that info, which means that the first byte of the first reserved pixel will always be 0 (it will never have red).
  * As I don't know how to encode transparency with this library (and TBH I don't really want to know) and using alpha-channels would double
  * the PNG size, I think this solution is okay.
