@@ -26,6 +26,8 @@ Some websites, say imageboards, don't allow to post any files besides images. If
 
 By utilising this program, you can convert this file to PNG, send it, and anybody can convert it back to original and since PNG format is lossless no data is lost
 
+Also, again due to lossless compression, the resulting PNG is smaller than the input
+
 ### Limitations
 
 The default limit for PNG size in libpng is 10^6 by 10^6 pixels. I decided to not change the limit for the sake of safety.
