@@ -257,7 +257,7 @@ void Converter::encode() {
 		return;
 	}
 	
-	if (outputImageHeight * outputImageWidth * 3 < (9 + inputFileSize))
+	if ( (outputImageHeight * outputImageWidth * 3 < (9 + inputFileSize)) || (outputImageHeight > 1000000) || (outputImageWidth > 1000000) )
 		if (!findBestResolution())
 			return;
 	

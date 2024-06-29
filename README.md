@@ -2,7 +2,7 @@
 
 ### Description
 
-This program can convert any file to PNG and then convert it back to original
+This program can convert any file to PNG and then convert it back to original without losing data
 
 ### Compiling
 
@@ -36,9 +36,11 @@ Also, again due to lossless compression, the resulting PNG is smaller than the i
 
 ### Limitations
 
-The default limit for PNG size in libpng is 10^6 by 10^6 pixels. I decided to not change the limit for the sake of safety.
+The default limit for PNG size in libpng is 10^6 by 10^6 pixels. I decided to not change the limit for the sake of safety
 
-This means that the maximum possible size of input file is ~2.7 TiB, which is good enough for most cases 
+This means that the maximum possible size of input file is ~2.7 TiB, which is good enough for most cases
+
+Besides, I doubt that any site or image viewer would be able to display such an image without issues anyway
 
 ### Example
 
