@@ -69,22 +69,24 @@ unsigned char* Converter::readBytes(FILE* inputFile, uintmax_t inputFileSize, ui
 
 	data[0] = 0;
 
+	uintmax_t i = 0;
+
 	auto extraValues = intToBytes(extraBytes);
 
-	for (int i = 0; i < 9; i++)
+	for (i; i < 9; i++)
 		data[i] = extraValues[i-1];
 
 	delete[] extraValues;
 	
 	// Converting the initial data into byte data
 	
-	for (uintmax_t i = 9; i < (9 + inputFileSize); i++)
+	for (i; i < (9 + inputFileSize); i++)
 		data[i] = fgetc(inputFile); 
 
 	// Adding extra bytes if there are any
 
 	for (uintmax_t j = 0; j < extraBytes; j++) 
-		data[9 + inputFileSize + j] = 0;
+		data[i + j] = 0;
 	
 	return data;
 } 
@@ -115,9 +117,9 @@ Resolution* Converter::bestResolution(uintmax_t fileSize) {
 	
 	while (resolution->height * resolution->width < totalPixels) {
 		if (resolution->width == resolution->height)
-			resolution->width += 1;
+			resolution->width++;
 		else
-			resolution->height += 1;
+			resolution->height++;
 	}
 	
 	if (resolution->height > 1000000 || resolution->width > 1000000) { // libpng default max height and width, otherwise might be buffer overflow 
