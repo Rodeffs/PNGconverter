@@ -23,7 +23,7 @@ int ImagePNG::checkIfPNG(FILE *file) {
 	return png_sig_cmp(buffer, 0, 8) == 0;  // read the first 8 bytes of the signature and return true if they match
 }
 
-void ImagePNG::write(unsigned char* data, FILE* outputFile, uintmax_t width, uintmax_t height, uintmax_t dataSize) {
+void ImagePNG::write(unsigned char* data, FILE* outputFile, uintmax_t width, uintmax_t height) {
 
 	if (!outputFile) {
 		perror("Error in pngUtils, unable to open output file");

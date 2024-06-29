@@ -267,7 +267,7 @@ void Converter::encode() {
 
 	ImagePNG outputPNG;
 
-	outputPNG.write(byteData, outputFile, outputImageWidth, outputImageHeight, outputImageHeight * outputImageWidth);
+	outputPNG.write(byteData, outputFile, outputImageWidth, outputImageHeight);
 
 	delete[] byteData;
 }
