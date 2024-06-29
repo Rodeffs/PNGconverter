@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
 
 	if (argc == 1 || parameterExists(argv, argv+argc, "--help") || parameterExists(argv, argv+argc, "-h")) {
 		cout << "Usage:\n\n-i [file] or --input-file [file]\tselect the input file to read from\n\n-o [file] or --output-file [file]\tselect the output file to write to\n\n-e or --encode\t\t\t\tencoding, assumed by default\n\n-d or --decode\t\t\t\tdecoding\n\n-h or --help\t\t\t\tdisplay this help message" << endl;
-		return 0;
+		return -1;
 	}
 	
 	// Parsing the input file
@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
 
 	if (!inputFilePath) {
 		cout << "Error, no input file is given. Use --help to get help" << endl;
-		return 0;
+		return -1;
 	}
 
 	// Parsing the output file
@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 
 	if (!outputFilePath) {
 		cout << "Error, no output file is given. Use -h or --help to get help" << endl;
-		return 0;
+		return -1;
 	}
 
 	// Now pass the filenames to Converter
@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
 	if (parameterExists(argv, argv+argc, "-d") || parameterExists(argv, argv+argc, "--decode")) {
 		if (parameterExists(argv, argv+argc, "-e") || parameterExists(argv, argv+argc, "--encode")) {
 			cout << "Error, conflicting switches. Use either -e or -d" << endl;
-			return 0;
+			return -1;
 		}
 		converter.decode(inputFilePath, outputFilePath);
 	}

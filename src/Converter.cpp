@@ -167,7 +167,7 @@ void Converter::encode(char* inputFilePath, char* outputFilePath) {
 	
 	uintmax_t extraBytes = resolution->height * resolution->width * 3 - 9 - inputFileSize;
 
-	cout << "Reading bytes from the input file" << endl;
+	cout << "Reading the data from the input file" << endl;
 
 	auto byteData = readBytes(inputFile, inputFileSize, extraBytes);
 
@@ -219,6 +219,8 @@ void Converter::decode(char* inputFilePath, char* outputFilePath) {
 	}
 
 	uintmax_t extraBytes = bytesToInt(byteData), byteDataSize = inputPNG.getReadDataSize();
+	
+	cout << "Writing the data to output file" << endl;
 
 	for (uintmax_t i = 9; i < (byteDataSize - extraBytes); i++)
 		fputc(byteData[i], outputFile);
