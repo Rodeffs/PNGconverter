@@ -158,7 +158,7 @@ uintmax_t Converter::bytesToInt(unsigned char* byteData) {
 
 	uintmax_t decoded = 0;
 
-	for (int i = 0; i < 8; i++) {
+	for (int i = 1; i < 9; i++) {
 		decoded <<= 8;
 		decoded += byteData[i];
 	}
@@ -177,20 +177,32 @@ unsigned char* Converter::getByteData() {
 	
 	// The amount of extra bytes added at the end
 
-	auto extraBytesAmount = intToBytes(totalSize - 8 - inputFileSize);
+	auto extraBytesAmount = intToBytes(totalSize - 9 - inputFileSize);
 	
 	// The whole encoding in one cycle
 
 	for (uintmax_t i = 0; i < totalSize; i++) {
 		
-		// Encoding first 8 bytes
+		// Encoding first 9 bytes
+		
+		/*
+		 * Okay, so technically only the first 8 bytes would be enough, however that would mean that
+		 * the visualized data is not really representative of the original, since we shifted
+		 * it to fit the first 3 pixels. For the sake of better visualization I decided to make
+		 * first 3 pixels store ONLY the information about the extra bytes at the end, instead of
+		 * a third pixel storing the first 2 bytes of that info and the last byte being the encoded
+		 * data itself
+		 */
 
-		if (i < 8)
-			byteData[i] = extraBytesAmount[i];
+		if (i == 0)
+			byteData[i] = 0; // so yeah, it means that the first byte is always 0, because 3 pixels = 9 bytes
+					 // and unsigned int = 8 bytes, but sacrificing only 1 byte is not that bad 
+		else if (i < 9)
+			byteData[i] = extraBytesAmount[i-1];
 
 		// Encoding the input file itself
 
-		else if (i < (8 + inputFileSize)) {
+		else if (i < (9 + inputFileSize)) {
 
 			byteData[i] = fgetc(inputFile);
 			
@@ -218,16 +230,16 @@ unsigned char* Converter::getByteData() {
 bool Converter::findBestResolution() {
 
 /* The idea is to store image using as less pixels as possible, while also making it resemble a square as much as possible.
- * We need to know how many pixels the original file size plus reserved 8 bytes take, 1 pixel = 3 bytes
+ * We need to know how many pixels the original file takes and then add 3 reserved bytes to the beginning
  * Instead of relying on std::floor I made it so the program adds the extra 1-2 bytes in case the resulting file size is not divisible by 3 
  * Next, we calculate the square root of the result, round it down to an integer and multiply it by itself
  * If the result is equal or greater than the total pixel count, we use it
  * If it's less we first increment width by 1 and if it's still not enough, then also height by 1
  */
 
-	int toBeDivisibleBy3 = (3 - (inputFileSize + 8) % 3) % 3;
+	int toBeDivisibleBy3 = (3 - (inputFileSize % 3)) % 3;
 
-	uintmax_t totalPixels = (8 + inputFileSize + toBeDivisibleBy3) / 3;
+	uintmax_t totalPixels = 3 + (inputFileSize + toBeDivisibleBy3) / 3;
 	
 	outputImageHeight = sqrt(totalPixels);
 
@@ -262,7 +274,7 @@ void Converter::encode() {
 		return;
 	}
 	
-	if ( (outputImageHeight * outputImageWidth * 3 < (8 + inputFileSize)) || (outputImageHeight > 1000000) || (outputImageWidth > 1000000) )
+	if ( (outputImageHeight * outputImageWidth * 3 < (9 + inputFileSize)) || (outputImageHeight > 1000000) || (outputImageWidth > 1000000) )
 		if (!findBestResolution())
 			return;
 	
@@ -302,7 +314,7 @@ void Converter::decode() {
 
 	uintmax_t extraBytesAmount = bytesToInt(byteData), byteDataSize = inputPNG.getImageSize();
 	
-	for (uintmax_t i = 8; i < (byteDataSize - extraBytesAmount); i++)
+	for (uintmax_t i = 9; i < (byteDataSize - extraBytesAmount); i++)
 		fputc(byteData[i], outputFile);
 
 	delete[] byteData;
