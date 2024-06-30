@@ -14,6 +14,7 @@ using std::sqrt;
 using std::perror;
 using std::fgetc;
 using std::fputc;
+using std::ferror;
 
 namespace fs = std::filesystem;
 
@@ -189,9 +190,20 @@ unsigned char* Converter::getByteData() {
 
 		// Encoding the input file itself
 
-		else if (i < (8 + inputFileSize))
+		else if (i < (8 + inputFileSize)) {
+
 			byteData[i] = fgetc(inputFile);
-		
+			
+			// Error checking
+			
+			if (ferror(inputFile)) {
+				cout << "Error while reading data from the input file" << endl;
+				delete[] extraBytes;
+				delete[] byteData;
+				return nullptr;
+			}
+		}
+
 		// Adding extra bytes if there are some
 
 		else
@@ -254,8 +266,10 @@ void Converter::encode() {
 		if (!findBestResolution())
 			return;
 	
-
 	auto byteData = getByteData();
+
+	if (!byteData)
+		return;
 
 	ImagePNG outputPNG;
 
@@ -292,5 +306,8 @@ void Converter::decode() {
 		fputc(byteData[i], outputFile);
 
 	delete[] byteData;
+
+	if (ferror(outputFile))
+		cout << "Error while writing data to the output file" << endl;
 }
 
