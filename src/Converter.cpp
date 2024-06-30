@@ -307,7 +307,9 @@ void Converter::decode() {
 
 	delete[] byteData;
 
-	if (ferror(outputFile))
+	if (ferror(outputFile)) {
 		cout << "Error while writing data to the output file" << endl;
+		fclose(outputFile); // immediately close the output file before the destructor does that so no further corruption
+	}
 }
 
