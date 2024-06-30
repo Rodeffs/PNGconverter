@@ -4,6 +4,22 @@
 
 This program can convert any file to PNG and then convert it back to original without losing data
 
+### Why is it useful
+
+Some websites, say imageboards, don't allow to post any files besides images. If you wanted to share some other file via them, you'd have to upload it somewhere and then share a link and those could be banned too
+
+By utilising this program, you can convert any file to PNG, send it and anybody can convert it back without data loss. Since PNG format utilises compression, the resulting PNG might even be smaller in size than input
+
+Also it's just a cool data visualizing tool
+
+### Limitations
+
+The default limit for PNG size in libpng is 10^6 by 10^6 pixels. I decided to not change the limit for the sake of safety
+
+This means that the maximum possible size of input file is ~2.7 TiB, which is good enough for most cases
+
+Besides, I doubt that any site or image viewer would be able to display such an image without issues anyway
+
 ### Compiling
 
 You need to have installed libpng library prior to compilation
@@ -39,22 +55,6 @@ NOTE: if no height or width were entered, the program will automatically pick th
 
 --help          display this help message
 ```
-
-### Why is it useful
-
-Some websites, say imageboards, don't allow to post any files besides images. If you wanted to share some other file via them, you'd have to upload it somewhere and then share a link and those could be banned too
-
-By utilising this program, you can convert any file to PNG, send it and anybody can convert it back without data loss. Since PNG format utilises compression, the resulting PNG might even be smaller in size than input
-
-Also it's just a cool data visualizing tool
-
-### Limitations
-
-The default limit for PNG size in libpng is 10^6 by 10^6 pixels. I decided to not change the limit for the sake of safety
-
-This means that the maximum possible size of input file is ~2.7 TiB, which is good enough for most cases
-
-Besides, I doubt that any site or image viewer would be able to display such an image without issues anyway
 
 ### Example
 
