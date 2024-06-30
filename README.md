@@ -10,7 +10,7 @@ Some websites, say imageboards, don't allow to post any files besides images. If
 
 By utilising this program, you can convert any file to PNG, send it and anybody can convert it back without data loss. Since PNG format utilises compression, the resulting PNG might even be smaller in size than input
 
-Also it's just a cool data visualizing tool
+Also it's just a cool data visualization tool
 
 ### Limitations
 
@@ -20,11 +20,11 @@ This means that the maximum possible size of input file is ~2.7 TiB, which is go
 
 Besides, I doubt that any site or image viewer would be able to display such an image without issues anyway
 
-### Compiling
+### Compilation
 
 You need to have installed libpng library prior to compilation
 
-If you also have cmake installed then the compilation process would look something like this:
+If you also have cmake installed, then the compilation process would look something like this:
 
 ```
 git clone https://github.com/Rodeffs/PNGconverter.git /where/to/clone/repo
