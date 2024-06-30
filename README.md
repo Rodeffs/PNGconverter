@@ -8,6 +8,20 @@ This program can convert any file to PNG and then convert it back to original wi
 
 You need to have installed libpng library prior to compilation
 
+If you also have cmake installed then the compilation process would look something like this:
+
+```
+git clone https://github.com/Rodeffs/PNGconverter.git /where/to/clone/repo
+
+cd /your/build/directory
+
+cmake /where/to/clone/repo
+
+cmake --build .
+
+./PNGconverter [options]
+```
+
 ### Usage
 
 ```
@@ -28,11 +42,11 @@ NOTE: if no height or width were entered, the program will automatically pick th
 
 ### Why is it useful
 
-Some websites, say imageboards, don't allow to post any files besides images. If you wanted to share some other file via them, you'd have to upload it somewhere and then share a link (those could be banned too)
+Some websites, say imageboards, don't allow to post any files besides images. If you wanted to share some other file via them, you'd have to upload it somewhere and then share a link and those could be banned too
 
-By utilising this program, you can convert this file to PNG, send it, and anybody can convert it back to original and since PNG format is lossless no data is lost
+By utilising this program, you can convert any file to PNG, send it and anybody can convert it back without data loss. Since PNG format utilises compression, the resulting PNG might even be smaller in size than input
 
-Also, again due to lossless compression, the resulting PNG is smaller than the input
+Also it's just a cool data visualizing tool
 
 ### Limitations
 
