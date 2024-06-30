@@ -1,5 +1,7 @@
 #include "../inc/Converter.hpp"
 #include "../inc/pngUtils.hpp"
+#include <cstdint>
+#include <cstdio>
 #include <filesystem>
 #include <cmath>
 #include <iostream>
@@ -164,32 +166,41 @@ uintmax_t Converter::bytesToInt(unsigned char* byteData) {
 }
 
 
-unsigned char* Converter::readBytes(uintmax_t extraBytes) {
-
-	unsigned char* data = new unsigned char[8 + inputFileSize + extraBytes];
-
-	// Encoding first three pixels
-
-	uintmax_t i = 0;
-
-	auto extraValues = intToBytes(extraBytes);
-
-	for (i; i < 8; i++)
-		data[i] = extraValues[i];
-
-	delete[] extraValues;
+unsigned char* Converter::getByteData() {
 	
-	// Converting the initial data into byte data
-	
-	for (i; i < (8 + inputFileSize); i++)
-		data[i] = fgetc(inputFile); 
+	// The size of pixel data
 
-	// Adding extra bytes if there are any
+	uintmax_t totalSize = outputImageHeight * outputImageWidth * 3;
 
-	for (uintmax_t j = 0; j < extraBytes; j++) 
-		data[i + j] = 0;
+	unsigned char* byteData = new unsigned char[totalSize];
 	
-	return data;
+	// The amount of extra bytes added at the end
+
+	auto extraBytes = intToBytes(totalSize - 8 - inputFileSize);
+	
+	// The whole encoding in one cycle
+
+	for (uintmax_t i = 0; i < totalSize; i++) {
+		
+		// Encoding first 8 bytes
+
+		if (i < 8)
+			byteData[i] = extraBytes[i];
+
+		// Encoding the input file itself
+
+		else if (i < (8 + inputFileSize))
+			byteData[i] = fgetc(inputFile);
+		
+		// Adding extra bytes if there are some
+
+		else
+			byteData[i] = 0;
+	}
+
+	delete[] extraBytes;
+	
+	return byteData;
 } 
 
 bool Converter::findBestResolution() {
@@ -243,9 +254,8 @@ void Converter::encode() {
 		if (!findBestResolution())
 			return;
 	
-	uintmax_t extraBytes = outputImageHeight * outputImageWidth * 3 - 8 - inputFileSize;
 
-	auto byteData = readBytes(extraBytes);
+	auto byteData = getByteData();
 
 	ImagePNG outputPNG;
 
@@ -273,7 +283,7 @@ void Converter::decode() {
 
 	auto byteData = inputPNG.read(inputFile);
 
-	if (byteData == nullptr)
+	if (!byteData)
 		return;
 
 	uintmax_t extraBytes = bytesToInt(byteData), byteDataSize = inputPNG.getImageSize();

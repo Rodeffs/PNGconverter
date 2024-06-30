@@ -21,7 +21,7 @@ private:
 
 	uintmax_t bytesToInt(unsigned char* byteData);
 
-	unsigned char* readBytes(uintmax_t extraBytes);  // reads the original file byte by byte and adds extra bytes for decoding
+	unsigned char* getByteData();  // reads the original file byte by byte and adds extra bytes for decoding
 	
 	bool findBestResolution();
 
