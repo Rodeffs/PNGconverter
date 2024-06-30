@@ -158,7 +158,7 @@ uintmax_t Converter::bytesToInt(unsigned char* byteData) {
 
 	uintmax_t decoded = 0;
 
-	for (int i = 1; i < 9; i++) {
+	for (int i = 0; i < 8; i++) {
 		decoded <<= 8;
 		decoded += byteData[i];
 	}
@@ -193,12 +193,13 @@ unsigned char* Converter::getByteData() {
 		 * a third pixel storing the first 2 bytes of that info and the last byte being the encoded
 		 * data itself
 		 */
+		
+		if (i < 8)
+			byteData[i] = extraBytesAmount[i];
 
-		if (i == 0)
-			byteData[i] = 0; // so yeah, it means that the first byte is always 0, because 3 pixels = 9 bytes
+		else if (i == 8)
+			byteData[i] = 0; // so yeah, it means that the last byte is always 0, because 3 pixels = 9 bytes
 					 // and unsigned int = 8 bytes, but sacrificing only 1 byte is not that bad 
-		else if (i < 9)
-			byteData[i] = extraBytesAmount[i-1];
 
 		// Encoding the input file itself
 
