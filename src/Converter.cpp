@@ -155,7 +155,7 @@ uintmax_t Converter::bytesToInt(unsigned char* byteData) {
 
 	uintmax_t decoded = 0;
 
-	for (int i = 1; i < 9; i++) {
+	for (int i = 0; i < 8; i++) {
 		decoded <<= 8;
 		decoded += byteData[i];
 	}
@@ -166,24 +166,22 @@ uintmax_t Converter::bytesToInt(unsigned char* byteData) {
 
 unsigned char* Converter::readBytes(uintmax_t extraBytes) {
 
-	unsigned char* data = new unsigned char[9 + inputFileSize + extraBytes];
+	unsigned char* data = new unsigned char[8 + inputFileSize + extraBytes];
 
 	// Encoding first three pixels
-
-	data[0] = 0;
 
 	uintmax_t i = 0;
 
 	auto extraValues = intToBytes(extraBytes);
 
-	for (i; i < 9; i++)
-		data[i] = extraValues[i-1];
+	for (i; i < 8; i++)
+		data[i] = extraValues[i];
 
 	delete[] extraValues;
 	
 	// Converting the initial data into byte data
 	
-	for (i; i < (9 + inputFileSize); i++)
+	for (i; i < (8 + inputFileSize); i++)
 		data[i] = fgetc(inputFile); 
 
 	// Adding extra bytes if there are any
@@ -197,20 +195,16 @@ unsigned char* Converter::readBytes(uintmax_t extraBytes) {
 bool Converter::findBestResolution() {
 
 /* The idea is to store image using as less pixels as possible, while also making it resemble a square as much as possible.
- * To do that first we need to know how many pixels the original file takes, which we can calculate by dividing the original
- * byte size by 3 (every pixel is 3 bytes), rounding it up and adding the reserved first three pixels.
- * Next, we calculate the square root of the result, round it down and use the number as the current resolution.
- * Then we find the amount of leftover pixels if we were to use this resolution.
- * If there are none, then we keep it
- * If there is some, then we increase the width by 1 and substract this value from the leftover pixels
- * If the resulting number is positive, it means there are still some leftover pixels left, which we can include by
- * increasing the height as well
+ * We need to know how many pixels the original file size plus reserved 8 bytes take, 1 pixel = 3 bytes
+ * Instead of relying on std::floor I made it so the program adds the extra 1-2 bytes in case the resulting file size is not divisible by 3 
+ * Next, we calculate the square root of the result, round it down to an integer and multiply it by itself
+ * If the result is equal or greater than the total pixel count, we use it
+ * If it's less we first increment width by 1 and if it's still not enough, then also height by 1
  */
-	// In case the initial file size is not divisible by 3, add this amount of extra bytes, so it can be converted to pixels
 
-	int toBeDivisibleBy3 = (3 - inputFileSize % 3) % 3;
+	int toBeDivisibleBy3 = (3 - (inputFileSize + 8) % 3) % 3;
 
-	uintmax_t totalPixels = 3 + (inputFileSize + toBeDivisibleBy3) / 3;
+	uintmax_t totalPixels = (8 + inputFileSize + toBeDivisibleBy3) / 3;
 	
 	outputImageHeight = sqrt(totalPixels);
 
@@ -232,20 +226,10 @@ bool Converter::findBestResolution() {
 }
 
 /* So the way I plan to convert the file to PNG is this:
- * 1. Calculate resolution
- * 2. The first three pixels (72 bits of data) are reserved and store information about the excess bytes, which is calculated
- * by substracting original file size from X
- * 3. Each byte from the original file is converted into a RGB value (from 0 to 255) and stored to an array.
- * 4. Then extra bytes are appended to the array as random integers from 0 to 255.
- * 5. Every three bytes from the array are read and converted into an RGB value (the amount of bytes will always be divisible by 3) for a single pixel
- * 6. This pixel is added to the PNG and the process continues row by row until the PNG is fully encoded.
- *
- * Since uintmax_t size is 64 bits (8 bytes) for most platforms and a pixel is encoded with 24 bits (3 bytes) of data, I had to reserved
- * the first 3 pixels (72 bits = 9 bytes) to store that info, which means that the first byte of the first reserved pixel will always be 0 (it will never have red).
- * As I don't know how to encode transparency with this library (and TBH I don't really want to know) and using alpha-channels would double
- * the PNG size, I think this solution is okay.
- * It would only fail in case the amount of excess data is 2^64 bytes, which would require the initial file size prior to encoding to be
- * at least 2^128 - 2^64 bytes, roughly 2^68 EiB of data, waaaayyy more than any file system can store 
+ * 1. Add 8 bytes to the beginning which is an 64-bit unsigned integer
+ * 2. Either use user defined resolution or if it's to small, calculate a better one
+ * 3. The 64 bit integer stores the amount of extra bytes that were added at the end to make file fit the resolution
+ * 4. The byte data is then converted into pixel data and added to png
  */
 
 void Converter::encode() {
@@ -255,11 +239,11 @@ void Converter::encode() {
 		return;
 	}
 	
-	if ( (outputImageHeight * outputImageWidth * 3 < (9 + inputFileSize)) || (outputImageHeight > 1000000) || (outputImageWidth > 1000000) )
+	if ( (outputImageHeight * outputImageWidth * 3 < (8 + inputFileSize)) || (outputImageHeight > 1000000) || (outputImageWidth > 1000000) )
 		if (!findBestResolution())
 			return;
 	
-	uintmax_t extraBytes = outputImageHeight * outputImageWidth * 3 - 9 - inputFileSize;
+	uintmax_t extraBytes = outputImageHeight * outputImageWidth * 3 - 8 - inputFileSize;
 
 	auto byteData = readBytes(extraBytes);
 
@@ -271,7 +255,7 @@ void Converter::encode() {
 }
 
 /* The decoding is the same, but in reverse:
- * 1. Read the first three pixels to get the value of excessive bytes, say X
+ * 1. Read the first 8 bytes to get the value of excessive bytes at the end, say X
  * 1. Continue reading the PNG pixel by pixel, row by row
  * 2. Every pixel color value is split into three bytes corresponding to the color
  * 3. Each byte is appended to output file
@@ -294,7 +278,7 @@ void Converter::decode() {
 
 	uintmax_t extraBytes = bytesToInt(byteData), byteDataSize = inputPNG.getImageSize();
 	
-	for (uintmax_t i = 9; i < (byteDataSize - extraBytes); i++)
+	for (uintmax_t i = 8; i < (byteDataSize - extraBytes); i++)
 		fputc(byteData[i], outputFile);
 
 	delete[] byteData;
