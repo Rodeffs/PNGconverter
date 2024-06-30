@@ -177,7 +177,7 @@ unsigned char* Converter::getByteData() {
 	
 	// The amount of extra bytes added at the end
 
-	auto extraBytes = intToBytes(totalSize - 8 - inputFileSize);
+	auto extraBytesAmount = intToBytes(totalSize - 8 - inputFileSize);
 	
 	// The whole encoding in one cycle
 
@@ -186,7 +186,7 @@ unsigned char* Converter::getByteData() {
 		// Encoding first 8 bytes
 
 		if (i < 8)
-			byteData[i] = extraBytes[i];
+			byteData[i] = extraBytesAmount[i];
 
 		// Encoding the input file itself
 
@@ -198,7 +198,7 @@ unsigned char* Converter::getByteData() {
 			
 			if (ferror(inputFile)) {
 				cout << "Error while reading data from the input file" << endl;
-				delete[] extraBytes;
+				delete[] extraBytesAmount;
 				delete[] byteData;
 				return nullptr;
 			}
@@ -210,7 +210,7 @@ unsigned char* Converter::getByteData() {
 			byteData[i] = 0;
 	}
 
-	delete[] extraBytes;
+	delete[] extraBytesAmount;
 	
 	return byteData;
 } 
@@ -300,9 +300,9 @@ void Converter::decode() {
 	if (!byteData)
 		return;
 
-	uintmax_t extraBytes = bytesToInt(byteData), byteDataSize = inputPNG.getImageSize();
+	uintmax_t extraBytesAmount = bytesToInt(byteData), byteDataSize = inputPNG.getImageSize();
 	
-	for (uintmax_t i = 8; i < (byteDataSize - extraBytes); i++)
+	for (uintmax_t i = 8; i < (byteDataSize - extraBytesAmount); i++)
 		fputc(byteData[i], outputFile);
 
 	delete[] byteData;
