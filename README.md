@@ -12,14 +12,6 @@ By utilising this program, you can convert any file to PNG, send it and anybody 
 
 Also it's just a cool data visualization tool
 
-### Limitations
-
-The default limit for PNG size in libpng is 10^6 by 10^6 pixels. I decided to not change the limit for the sake of safety
-
-This means that the maximum possible size of input file is ~2.7 TiB, which is good enough for most cases
-
-Besides, I doubt that any site or image viewer would be able to display such an image without issues anyway
-
 ### Compilation
 
 You need to have installed libpng library prior to compilation
@@ -87,3 +79,19 @@ Now the resulting image is:
 ![Image](example_output2.png "Example 2")
 
 It can also be decoded back to the original file with no problems
+
+### Limitations
+
+The default limit for PNG size in libpng is 10^6 by 10^6 pixels. I decided to not change the limit for the sake of safety
+
+This means that the maximum possible size of input file is ~2.7 TiB, which is good enough for most cases
+
+Besides, I doubt that any site or image viewer would be able to display such an image without issues anyway
+
+The only major problem that this program has is that the input file is stored in RAM during both encoding and decoding. And while there is a way to fix that for encoding (just doing it row by row instead of whole thing at once), I don't know how to fix it for decoding, simply due to the fact that libpng stores the whole PNG in RAM while reading it. Maybe there is a way to remedy that and maybe it's even included in that library, but due to the lack of decent documentation and my lack of will, I'm not going to bother.
+
+So it means that don't try to encode/decode files that exceed your RAM capacity 
+
+#### P.S.
+
+This project was inspired by [this video](https://youtu.be/Y2L7_2Wvycc?si=zESPOYajcYqceoiB "YouTube link")
