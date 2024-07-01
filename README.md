@@ -19,15 +19,25 @@ You need to have installed libpng library prior to compilation
 If you also have cmake installed, then the compilation process would look something like this:
 
 ```
-git clone https://github.com/Rodeffs/PNGconverter.git /where/to/clone/repo
+cd <path to build directory>
 
-cd /your/build/directory
-
-cmake /where/to/clone/repo
+cmake <path to source directory>
 
 cmake --build .
 
 ./PNGconverter [options]
+```
+
+In case you're using Windows and variables PNG_LIBRARY and PNG_PNG_INCLUDE_DIR are not defined yet:
+
+```
+cd <path to build directory>
+
+cmake <path to source directory> -D PNG_LIBRARY:FILEPATH=<path to libpng dll > -D PNG_PNG_INCLUDE_DIR:PATH=<path to libpng directory>
+
+cmake --build .
+
+PNGconverter.exe [options]
 ```
 
 ### Usage
@@ -67,7 +77,7 @@ Next, if I wanted to convert it back, I'd run:
 ```
 PNGconverter -d example_output.png -o example_output.txt
 ```
-
+file:///home/owner/Downloads/report.txt
 If I wanted the output image to be a different resolution, say 500 by 155, then the input would look like this:
 
 ```
