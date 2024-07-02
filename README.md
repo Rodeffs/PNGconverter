@@ -33,7 +33,7 @@ In case you're using Windows and variables PNG_LIBRARY and PNG_PNG_INCLUDE_DIR a
 ```
 cd <path to build directory>
 
-cmake <path to source directory> -D PNG_LIBRARY:FILEPATH=<path to libpng dll > -D PNG_PNG_INCLUDE_DIR:PATH=<path to libpng directory>
+cmake <path to source directory> -D PNG_LIBRARY:FILEPATH=<path to libpng dll> -D PNG_PNG_INCLUDE_DIR:PATH=<path to libpng directory>
 
 cmake --build .
 
@@ -77,7 +77,7 @@ Next, if I wanted to convert it back, I'd run:
 ```
 PNGconverter -d example_output.png -o example_output.txt
 ```
-file:///home/owner/Downloads/report.txt
+
 If I wanted the output image to be a different resolution, say 500 by 155, then the input would look like this:
 
 ```
