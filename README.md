@@ -1,10 +1,10 @@
 # PNG Converter
 
-### Description
+## Description
 
 This program can convert any file to PNG and then convert it back to original without losing data
 
-### Why is it useful
+## Why is it useful
 
 Some websites, say imageboards, don't allow to post any files besides images. If you wanted to share some other file via them, you'd have to upload it somewhere and then share a link and those could be banned too
 
@@ -12,9 +12,53 @@ By utilising this program, you can convert any file to PNG, send it and anybody 
 
 Also it's just a cool data visualization tool
 
-### Compilation
+## Usage
 
-You need to have installed libpng library prior to compilation
+```
+-e [file]       encode the given file
+
+-d [file]       decode the given file
+
+-o [file]       output the encoded/decoded data to a given file
+
+-h [integer]    the height of the PNG to be encoded
+
+-w [integer]    the width of the PNG to be encoded
+
+NOTE: if no height or width were entered, the program will automatically pick the best resolution
+
+--help          display this help message
+```
+
+## Running
+
+### On Linux
+
+First, install libpng library using your distro's package manager. For instance, on Arch Linux that is:
+
+```
+sudo pacman -S libpng
+```
+
+Then [install](https://github.com/Rodeffs/PNGconverter/releases "Releases") the binary itself to your directory of choice
+
+After that, make it executable:
+
+```
+sudo chmod a+x PNGconverter
+```
+
+And run it:
+
+```
+./PNGconverter [options]
+```
+
+## Compilation
+
+You can also just compile the program yourself, if the binaries don't work
+
+Again, you need to have installed libpng library prior to compilation
 
 If you also have cmake installed, then the compilation process would look something like this:
 
@@ -40,25 +84,7 @@ cmake --build .
 PNGconverter.exe [options]
 ```
 
-### Usage
-
-```
--e [file]       encode the given file
-
--d [file]       decode the given file
-
--o [file]       output the encoded/decoded data to a given file
-
--h [integer]    the height of the PNG to be encoded
-
--w [integer]    the width of the PNG to be encoded
-
-NOTE: if no height or width were entered, the program will automatically pick the best resolution
-
---help          display this help message
-```
-
-### Example
+## Example
 
 Let's say, I've got some file named example_input.txt and I want to encode it
 
@@ -90,7 +116,7 @@ Now the resulting image is:
 
 It can also be decoded back to the original file with no problems
 
-### Limitations
+## Limitations
 
 The default limit for PNG size in libpng is 10^6 by 10^6 pixels. I decided to not change the limit for the sake of safety
 
@@ -102,6 +128,6 @@ The only major problem that this program has is that the input file is stored in
 
 So it means that don't try to encode/decode files that exceed your RAM capacity :P
 
-#### P.S.
+## P.S.
 
 This project was inspired by [this video](https://youtu.be/Y2L7_2Wvycc?si=zESPOYajcYqceoiB "YouTube link")
