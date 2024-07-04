@@ -30,37 +30,11 @@ NOTE: if no height or width were entered, the program will automatically pick th
 --help          display this help message
 ```
 
-## Running
-
-### On Linux
-
-First, install libpng library using your distro's package manager. For instance, on Arch Linux that is:
-
-```
-sudo pacman -S libpng
-```
-
-Then [install](https://github.com/Rodeffs/PNGconverter/releases "Releases") the binary itself to your directory of choice
-
-After that, make it executable:
-
-```
-sudo chmod a+x PNGconverter
-```
-
-And run it:
-
-```
-./PNGconverter [options]
-```
-
 ## Compilation
 
-You can also just compile the program yourself, if the binaries don't work
+You will need to install libpng and zlib libraries (if you're using Linux then by default your package manager should install zlib as a dependancy of libpng). I also suggest installing cmake and using a GCC compiler for Linux and MinGW compiler for Windows
 
-Again, you need to have installed libpng library prior to compilation
-
-If you also have cmake installed, then the compilation process would look something like this:
+Then the compilation process would look something like this:
 
 ```
 cd <path to build directory>
@@ -72,12 +46,12 @@ cmake --build .
 ./PNGconverter [options]
 ```
 
-In case you're using Windows and variables PNG_LIBRARY and PNG_PNG_INCLUDE_DIR are not defined yet:
+In case you're using Windows and variables PNG_LIBRARY, PNG_PNG_INCLUDE_DIR, ZLIB_LIBRARY and ZLIB_INCLUDE_DIR are not defined yet:
 
 ```
 cd <path to build directory>
 
-cmake <path to source directory> -D PNG_LIBRARY:FILEPATH=<path to libpng dll> -D PNG_PNG_INCLUDE_DIR:PATH=<path to libpng directory>
+cmake <path to source directory> -D PNG_LIBRARY:FILEPATH=<path to libpng dll> -D PNG_PNG_INCLUDE_DIR:PATH=<path to libpng directory> -D ZLIB_LIBRARY:FILEPATH=<path to zlib dll> -D ZLIB_INCLUDE_DIR:PATH=<path to zlib directory>
 
 cmake --build .
 
@@ -86,9 +60,7 @@ PNGconverter.exe [options]
 
 ## Example
 
-Let's say, I've got some file named example_input.txt and I want to encode it
-
-First, I need compile the program, then run:
+Let's say, I've got some file named example_input.txt and I want to encode it. The command options in this case are:
 
 ```
 PNGconverter -e example_input.txt -o example_output.png
